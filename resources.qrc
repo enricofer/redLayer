@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/redLayer" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
