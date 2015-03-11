@@ -6,5 +6,13 @@
         <file>icons/pen.png</file>
         <file>icons/sketch.png</file>
         <file>icons/toLayer.png</file>
+        <file>icons/colorRed.png</file>
+        <file>icons/colorBlack.png</file>
+        <file>icons/colorBlue.png</file>
+        <file>icons/colorGreen.png</file>
+        <file>icons/width2.png</file>
+        <file>icons/width4.png</file>
+        <file>icons/width8.png</file>
+        <file>icons/width16.png</file>
     </qresource>
 </RCC>
