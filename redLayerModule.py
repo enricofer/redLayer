@@ -307,7 +307,7 @@ class redLayer(QgsMapTool):
         #remove current sketches
         self.removeSketchesAction()
         #connect to signal to save sketches along with project file
-        qgis.core.QgsProject.instance().projectSaved.connect(self.saveSketches)
+        QgsProject.instance().projectSaved.connect(self.saveSketches)
         #load project.sketch if file exists
         self.loadSketches()
 
@@ -328,7 +328,7 @@ class redLayer(QgsMapTool):
             outfile.close()
 
     def saveSketches(self):
-        sketchFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        sketchFileInfo = QFileInfo(QgsProject.instance().fileName())
         outfile = open(os.path.join(sketchFileInfo.path(),sketchFileInfo.baseName()+'.sketch'), 'w')
         for sketch in self.geoSketches:
             if sketch.asGeometry():
@@ -336,7 +336,7 @@ class redLayer(QgsMapTool):
         outfile.close()
 
     def Ex_loadSketches(self):
-        projectFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        projectFileInfo = QFileInfo(QgsProject.instance().fileName())
         sketchFileInfo = QFileInfo(os.path.join(projectFileInfo.path(),projectFileInfo.baseName()+'.sketch'))
         print sketchFileInfo.filePath()
         if sketchFileInfo.exists():
@@ -349,7 +349,7 @@ class redLayer(QgsMapTool):
         print sketchdef
 
     def loadSketches(self):
-        projectFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        projectFileInfo = QFileInfo(QgsProject.instance().fileName())
         sketchFileInfo = QFileInfo(os.path.join(projectFileInfo.path(),projectFileInfo.baseName()+'.sketch'))
         if sketchFileInfo.exists():
             infile = open(sketchFileInfo.filePath(), 'r')
