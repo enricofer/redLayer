@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/plugins/redLayer" >
-        <file>icon.png</file>
+        <file>icons/canvas.png</file>
+        <file>icons/erase.png</file>
+        <file>icons/remove.png</file>
+        <file>icons/pen.png</file>
+        <file>icons/sketch.png</file>
+        <file>icons/toLayer.png</file>
     </qresource>
 </RCC>

@@ -28,7 +28,7 @@ homepage=
 tracker=
 repository=
 category=Plugins
-icon=icon.png
+icon=icons/sketch.png
 # experimental flag
 experimental=False
 

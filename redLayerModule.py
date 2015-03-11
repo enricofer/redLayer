@@ -34,8 +34,9 @@ from qgis.core import *
 from qgis.utils import *
 from qgis.gui import *
 
-from redLayerModule_dialog import redLayerDialog
+#from redLayerModule_dialog import redLayerDialog
 import os.path
+import json
 
 
 class redLayer(QgsMapTool):
@@ -69,7 +70,7 @@ class redLayer(QgsMapTool):
                 QCoreApplication.installTranslator(self.translator)
 
         # Create the dialog (after translation) and keep reference
-        self.dlg = redLayerDialog()
+        #self.dlg = redLayerDialog()
 
         # Declare instance attributes
         self.actions = []
@@ -78,6 +79,8 @@ class redLayer(QgsMapTool):
         self.toolbar = self.iface.addToolBar(u'redLayer')
         self.toolbar.setObjectName(u'redLayer')
         QgsMapTool.__init__(self, self.canvas)
+        self.iface.projectRead.connect(self.projectReadAction)
+        self.iface.newProjectCreated.connect(self.newProjectCreatedAction)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -171,12 +174,36 @@ class redLayer(QgsMapTool):
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/redLayer/icon.png'
         self.add_action(
-            icon_path,
-            text=self.tr(u'Red Layer'),
-            callback=self.run,
+            ':/plugins/redLayer/icons/sketch.png',
+            text=self.tr(u'Sketch'),
+            callback=self.sketchAction,
             parent=self.iface.mainWindow())
+        #self.add_action(
+        #    ':/plugins/redLayer/icons/pen.png',
+        #    text=self.tr(u'Pen'),
+        #    callback=self.penAction,
+        #    parent=self.iface.mainWindow())
+        #self.add_action(
+        #    ':/plugins/redLayer/icons/canvas.png',
+        #    text=self.tr(u'Color canvas'),
+        #    callback=self.canvasAction,
+        #    parent=self.iface.mainWindow())
+        self.add_action(
+            ':/plugins/redLayer/icons/erase.png',
+            text=self.tr(u'Erase'),
+            callback=self.eraseAction,
+            parent=self.iface.mainWindow())
+        self.add_action(
+            ':/plugins/redLayer/icons/remove.png',
+            text=self.tr(u'remove sketches from map'),
+            callback=self.removeSketchesAction,
+            parent=self.iface.mainWindow())
+        #self.add_action(
+        #    ':/plugins/redLayer/icons/toLayer.png',
+        #    text=self.tr(u'export sketches to Memory layer'),
+        #    callback=self.exportAction,
+        #    parent=self.iface.mainWindow())
         self.geoSketches = []
         self.dumLayer = QgsVectorLayer("Point?crs=EPSG:4326", "temporary_points", "memory")
         self.pressed=None
@@ -184,19 +211,22 @@ class redLayer(QgsMapTool):
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+        self.removeSketchesAction()
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&Red Layer'),
                 action)
             self.iface.removeToolBarIcon(action)
+        del self.toolbar
 
 
-    def run(self):
+    def sketchAction(self):
         """Run method that performs all the real work"""
         gsvMessage="Click on map to draw geo sketches"
-        iface.mainWindow().statusBar().showMessage(gsvMessage)
-        self.dumLayer.setCrs(iface.mapCanvas().mapRenderer().destinationCrs())
+        self.iface.mainWindow().statusBar().showMessage(gsvMessage)
+        self.dumLayer.setCrs(self.iface.mapCanvas().mapRenderer().destinationCrs())
         self.canvas.setMapTool(self)
+        self.canvasAction = "sketch"
         # show the dialog
         #self.dlg.show()
         # Run the dialog event loop
@@ -207,6 +237,27 @@ class redLayer(QgsMapTool):
             # substitute with your code.
             #pass
 
+    def penAction(self):
+        pass
+
+    def canvasAction(self):
+        pass
+
+    def eraseAction(self):
+        gsvMessage="Click on map to erase geo sketches"
+        self.iface.mainWindow().statusBar().showMessage(gsvMessage)
+        self.dumLayer.setCrs(self.iface.mapCanvas().mapRenderer().destinationCrs())
+        self.canvas.setMapTool(self)
+        self.canvasAction = "erase"
+
+    def exportAction(self):
+        pass
+
+    def removeSketchesAction(self):
+        for sketch in self.geoSketches:
+            sketch.reset()
+        self.geoSketches = []
+
 
     def canvasPressEvent(self, event):
         # Press event handler inherited from QgsMapTool used to store the given location in WGS84 long/lat
@@ -216,10 +267,11 @@ class redLayer(QgsMapTool):
         self.pressedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(self.pressx, self.pressy)
         #print self.PressedPoint.x(),self.PressedPoint.y()
         #self.pointWgs84 = self.transformToWGS84(self.PressedPoint)
-        self.sketch=QgsRubberBand(iface.mapCanvas(),QGis.Line )
-        self.sketch.setWidth( 5 )
-        self.sketch.setColor(Qt.red)
-        self.sketch.addPoint(self.pressedPoint)
+        if self.canvasAction == "sketch_":
+            self.sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
+            self.sketch.setWidth( 5 )
+            self.sketch.setColor(Qt.red)
+            self.sketch.addPoint(self.pressedPoint)
 
     def canvasMoveEvent(self, event):
         # Moved event handler inherited from QgsMapTool needed to highlight the direction that is giving by the user
@@ -228,9 +280,90 @@ class redLayer(QgsMapTool):
             x = event.pos().x()
             y = event.pos().y()
             movedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-            self.sketch.addPoint(movedPoint)
+            if self.canvasAction == "sketch":
+                sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
+                sketch.setWidth( 5 )
+                sketch.setColor(Qt.red)
+                sketch.addPoint(self.pressedPoint)
+                sketch.addPoint(movedPoint)
+                self.pressedPoint = movedPoint
+                self.geoSketches.append(sketch)
+            if self.canvasAction == "erase":
+                cursor = QgsRectangle (self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
+                for sketch in self.geoSketches:
+                    if sketch.asGeometry() and sketch.asGeometry().boundingBox().intersects(cursor):
+                        sketch.reset()
+
 
     def canvasReleaseEvent(self, event):
-        self.geoSketches.append(self.sketch)
+        #self.geoSketches.append(self.sketch)
         self.pressed=None
+
+    def newProjectCreatedAction(self):
+        #remove current sketches
+        self.removeSketchesAction()
+
+    def projectReadAction(self):
+        #remove current sketches
+        self.removeSketchesAction()
+        #connect to signal to save sketches along with project file
+        qgis.core.QgsProject.instance().projectSaved.connect(self.saveSketches)
+        #load project.sketch if file exists
+        self.loadSketches()
+
+
+    def Ex_saveSketches(self):
+        sketchdef = {}
+        id = 0
+        for sketch in self.geoSketches:
+            if sketch.asGeometry():
+                sketchdef[str(id)]=sketch.asGeometry().exportToWkt()
+                id += 1
+
+        sketchFileInfo = QFileInfo(QgsProject.instance().fileName())
+        print QgsProject.instance().fileName()
+        if sketchdef != {}:
+            with open(os.path.join(sketchFileInfo.path(),sketchFileInfo.baseName()+'.sketch'), 'w') as outfile:
+                json.dump(sketchdef, outfile)
+            outfile.close()
+
+    def saveSketches(self):
+        sketchFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        outfile = open(os.path.join(sketchFileInfo.path(),sketchFileInfo.baseName()+'.sketch'), 'w')
+        for sketch in self.geoSketches:
+            if sketch.asGeometry():
+                outfile.write(sketch.asGeometry().exportToWkt()+'\n')
+        outfile.close()
+
+    def Ex_loadSketches(self):
+        projectFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        sketchFileInfo = QFileInfo(os.path.join(projectFileInfo.path(),projectFileInfo.baseName()+'.sketch'))
+        print sketchFileInfo.filePath()
+        if sketchFileInfo.exists():
+            with open(sketchFileInfo.filePath(), 'r') as infile:
+                sketchdef = json.JSONDecoder().decode(infile.read()) #json.dump(sketchdef, infile)
+                #sketchdef = json.loads(infile)
+                print infile.read()
+
+            infile.close()
+        print sketchdef
+
+    def loadSketches(self):
+        projectFileInfo = QFileInfo(qgis.core.QgsProject.instance().fileName())
+        sketchFileInfo = QFileInfo(os.path.join(projectFileInfo.path(),projectFileInfo.baseName()+'.sketch'))
+        if sketchFileInfo.exists():
+            infile = open(sketchFileInfo.filePath(), 'r')
+            canvas = self.iface.mapCanvas()
+            mapRenderer = canvas.mapRenderer()
+            srs=mapRenderer.destinationCrs()
+            dumLayer = QgsVectorLayer("Line?crs="+str(srs.authid()), "temporary_lines", "memory")
+            self.geoSketches = []
+            for line in infile:
+                #print line
+                sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
+                sketch.setWidth( 5 )
+                sketch.setColor(Qt.red)
+                sketch.setToGeometry(QgsGeometry.fromWkt(line),dumLayer)
+                self.geoSketches.append(sketch)
+            infile.close()
 
