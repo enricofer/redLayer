@@ -14,5 +14,6 @@
         <file>icons/width4.png</file>
         <file>icons/width8.png</file>
         <file>icons/width16.png</file>
+        <file>icons/note.png</file>
     </qresource>
 </RCC>

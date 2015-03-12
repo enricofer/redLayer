@@ -3,7 +3,7 @@
 /***************************************************************************
  redLayer
                                  A QGIS plugin
- fast georeferenced annotation
+ quick georeferenced sketches and annotation
                               -------------------
         begin                : 2015-03-10
         git sha              : $Format:%H$
@@ -175,6 +175,12 @@ class redLayer(QgsMapTool):
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        #canvasButton = QToolButton(self.iface.mainWindow())
+        #canvasButton.setIcon(QIcon(':/plugins/redLayer/icons/canvas.png'))
+        #canvasButton.setMenu(self.canvasMenu())
+        #canvasButton.setPopupMode(QToolButton.InstantPopup)
+        #self.iface.addToolBarWidget(canvasButton)
+
         self.add_action(
             ':/plugins/redLayer/icons/sketch.png',
             text=self.tr(u'Sketch'),
@@ -201,11 +207,12 @@ class redLayer(QgsMapTool):
             callback=self.removeSketchesAction,
             parent=self.iface.mainWindow())
         self.noteButton = self.add_action(
-            ':/plugins/redLayer/icons/toLayer.png',
+            ':/plugins/redLayer/icons/note.png',
             text=self.tr(u'export sketches to Memory layer'),
             callback=None,
             parent=self.iface.mainWindow())
         canvasButton.setMenu(self.canvasMenu())
+        #canvasButton.setPopupMode(QToolButton.InstantPopup) # qaction is not a qtoolbutton!
         self.noteButton.setCheckable (True)
         self.geoSketches = []
         self.dumLayer = QgsVectorLayer("Point?crs=EPSG:4326", "temporary_points", "memory")

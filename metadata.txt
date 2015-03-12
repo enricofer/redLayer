@@ -9,8 +9,8 @@
 [general]
 name=Red Layer
 qgisMinimumVersion=2.0
-description=fast georeferenced annotation
-version=0.1
+description=quick georeferenced sketches and annotations
+version=1.0
 author=Enrico Ferreguti
 email=enricofer@gmail.com
 
@@ -22,11 +22,11 @@ email=enricofer@gmail.com
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=
+tags=annotations,sketch,draw,
 
-homepage=
-tracker=
-repository=
+homepage=http://geogear.wordpress.org
+tracker=https://github.com/enricofer/redLayer/issues
+repository=https://github.com/enricofer/redLayer
 category=Plugins
 icon=icons/sketch.png
 # experimental flag

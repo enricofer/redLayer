@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/enrico/Documenti/plugins/redLayer/ui_note_dialog.ui'
+# Form implementation generated from reading ui file 'D:\documenti\dev\redLayer\ui_note_dialog.ui'
 #
-# Created: Thu Mar 12 01:02:15 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Thu Mar 12 10:35:39 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_noteDialog(object):
     def setupUi(self, noteDialog):
         noteDialog.setObjectName(_fromUtf8("noteDialog"))
-        noteDialog.resize(323, 105)
+        noteDialog.resize(180, 131)
         self.horizontalLayout = QtGui.QHBoxLayout(noteDialog)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -34,17 +34,14 @@ class Ui_noteDialog(object):
         self.label = QtGui.QLabel(noteDialog)
         self.label.setObjectName(_fromUtf8("label"))
         self.verticalLayout.addWidget(self.label)
-        self.sourceString = QtGui.QLineEdit(noteDialog)
-        self.sourceString.setReadOnly(False)
-        self.sourceString.setObjectName(_fromUtf8("sourceString"))
-        self.verticalLayout.addWidget(self.sourceString)
+        self.noteText = QtGui.QTextEdit(noteDialog)
+        self.noteText.setObjectName(_fromUtf8("noteText"))
+        self.verticalLayout.addWidget(self.noteText)
         self.buttonBox = QtGui.QDialogButtonBox(noteDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout.addWidget(self.buttonBox)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.retranslateUi(noteDialog)
@@ -53,6 +50,6 @@ class Ui_noteDialog(object):
         QtCore.QMetaObject.connectSlotsByName(noteDialog)
 
     def retranslateUi(self, noteDialog):
-        noteDialog.setWindowTitle(_translate("noteDialog", "Dialog", None))
+        noteDialog.setWindowTitle(_translate("noteDialog", "Sketch Note", None))
         self.label.setText(_translate("noteDialog", "Note", None))
 

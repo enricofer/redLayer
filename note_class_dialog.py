@@ -56,10 +56,10 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
         pass
 
     def mkNote(self):
-        TD =QTextDocument(self.sourceString.text())
+        TD =QTextDocument(self.noteText.toPlainText())
         textItem = QgsTextAnnotationItem( self.iface.mapCanvas() )
         textItem.setMapPosition(self.point)
         textItem.setFrameSize(TD.size())
         textItem.setDocument(TD)
         textItem.update()
-        self.sourceString.setText("")
+        self.noteText.clear()
