@@ -34,7 +34,7 @@ from qgis.core import *
 from qgis.utils import *
 from qgis.gui import *
 
-#from redLayerModule_dialog import redLayerDialog
+from note_class_dialog import sketchNoteDialog
 import os.path
 import json
 
@@ -212,6 +212,7 @@ class redLayer(QgsMapTool):
         self.pressed=None
         self.currentColor = QColor("#FF0000")
         self.currentWidth = 5
+        self.annotation = sketchNoteDialog(self.iface)
 
     def canvasMenu(self):
         contextMenu = QMenu()
@@ -349,14 +350,7 @@ class redLayer(QgsMapTool):
         #self.geoSketches.append(self.sketch)
         self.pressed=None
         if self.canvasAction == "sketch" and self.noteButton.isChecked():
-            textItem = QgsTextAnnotationItem( self.iface.mapCanvas() )
-            textItem.setMapPosition(self.pressedPoint)
-            textItem.setFrameSize(QSizeF(200,100))
-            txt = "Red Layer Note"
-            textItem.setDocument(QTextDocument(txt))
-            self.geoSketches[-1][3]=txt
-            textItem.update()
-
+            self.annotation.newPoint(self.pressedPoint)
 
     def newProjectCreatedAction(self):
         #remove current sketches
@@ -375,7 +369,7 @@ class redLayer(QgsMapTool):
         outfile = open(os.path.join(sketchFileInfo.path(),sketchFileInfo.baseName()+'.sketch'), 'w')
         for sketch in self.geoSketches:
             if sketch[2].asGeometry():
-                outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().exportToWkt()+'\n'+"|"+sketch[3])
+                outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().exportToWkt()+"|"+sketch[3]+'\n')
         outfile.close()
 
     def loadSketches(self):
@@ -395,8 +389,6 @@ class redLayer(QgsMapTool):
                 sketch.setWidth( int(inline[1]) )
                 sketch.setColor(QColor(inline[0]))
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]),dumLayer)
-                self.geoSketches.append([inline[0],inline[1],sketch])
-                if inline[3] != "":
-                    pass
+                self.geoSketches.append([inline[0],inline[1],sketch,inline[3]])
             infile.close()
 
