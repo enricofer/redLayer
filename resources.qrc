@@ -1,19 +1,20 @@
 <RCC>
     <qresource prefix="/plugins/redLayer" >
-        <file>icons/canvas.png</file>
-        <file>icons/erase.png</file>
-        <file>icons/remove.png</file>
-        <file>icons/pen.png</file>
-        <file>icons/sketch.png</file>
-        <file>icons/toLayer.png</file>
+        <file>icons/canvas.svg</file>
+        <file>icons/erase.svg</file>
+        <file>icons/remove.svg</file>
+        <file>icons/pen.svg</file>
+        <file>icons/sketch.svg</file>
+        <file>icons/toLayer.svg</file>
         <file>icons/colorRed.png</file>
         <file>icons/colorBlack.png</file>
         <file>icons/colorBlue.png</file>
+        <file>icons/colorYellow.png</file>
         <file>icons/colorGreen.png</file>
         <file>icons/width2.png</file>
         <file>icons/width4.png</file>
         <file>icons/width8.png</file>
         <file>icons/width16.png</file>
-        <file>icons/note.png</file>
+        <file>icons/note.svg</file>
     </qresource>
 </RCC>

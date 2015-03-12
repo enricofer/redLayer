@@ -182,7 +182,7 @@ class redLayer(QgsMapTool):
         #self.iface.addToolBarWidget(canvasButton)
 
         self.add_action(
-            ':/plugins/redLayer/icons/sketch.png',
+            ':/plugins/redLayer/icons/sketch.svg',
             text=self.tr(u'Sketch'),
             callback=self.sketchAction,
             parent=self.iface.mainWindow())
@@ -192,22 +192,22 @@ class redLayer(QgsMapTool):
         #    callback=self.penAction,
         #    parent=self.iface.mainWindow())
         canvasButton = self.add_action(
-            ':/plugins/redLayer/icons/canvas.png',
+            ':/plugins/redLayer/icons/canvas.svg',
             text=self.tr(u'Color canvas'),
             callback=None,
             parent=self.iface.mainWindow())
         self.add_action(
-            ':/plugins/redLayer/icons/erase.png',
+            ':/plugins/redLayer/icons/erase.svg',
             text=self.tr(u'Erase'),
             callback=self.eraseAction,
             parent=self.iface.mainWindow())
         self.add_action(
-            ':/plugins/redLayer/icons/remove.png',
+            ':/plugins/redLayer/icons/remove.svg',
             text=self.tr(u'remove sketches from map'),
             callback=self.removeSketchesAction,
             parent=self.iface.mainWindow())
         self.noteButton = self.add_action(
-            ':/plugins/redLayer/icons/note.png',
+            ':/plugins/redLayer/icons/note.svg',
             text=self.tr(u'export sketches to Memory layer'),
             callback=None,
             parent=self.iface.mainWindow())
@@ -231,6 +231,8 @@ class redLayer(QgsMapTool):
         self.colorBlueAction.triggered.connect(self.colorBlueFunc)
         self.colorBlackAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorBlack.png")),"")
         self.colorBlackAction.triggered.connect(self.colorBlackFunc)
+        self.colorYellowAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorYellow.png")),"")
+        self.colorYellowAction.triggered.connect(self.colorYellowFunc)
         self.width2Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width2.png")),"")
         self.width2Action.triggered.connect(self.width2Func)
         self.width4Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width4.png")),"")
@@ -284,8 +286,11 @@ class redLayer(QgsMapTool):
     def colorBlueFunc(self):
         self.currentColor = QColor("#0000FF")
 
+    def colorYellowFunc(self):
+        self.currentColor = QColor("#FCCA00")
+
     def colorBlackFunc(self):
-        self.currentColor = QColor("#FFFFFF")
+        self.currentColor = QColor("#000000")
 
     def width2Func(self):
         self.currentWidth = 2
