@@ -183,7 +183,7 @@ class redLayer(QgsMapTool):
 
         self.add_action(
             ':/plugins/redLayer/icons/sketch.svg',
-            text=self.tr(u'Sketch'),
+            text=self.tr(u'Sketch on map'),
             callback=self.sketchAction,
             parent=self.iface.mainWindow())
         #self.add_action(
@@ -193,22 +193,22 @@ class redLayer(QgsMapTool):
         #    parent=self.iface.mainWindow())
         canvasButton = self.add_action(
             ':/plugins/redLayer/icons/canvas.svg',
-            text=self.tr(u'Color canvas'),
+            text=self.tr(u'Color and width canvas'),
             callback=None,
             parent=self.iface.mainWindow())
         self.add_action(
             ':/plugins/redLayer/icons/erase.svg',
-            text=self.tr(u'Erase'),
+            text=self.tr(u'Erase sketches'),
             callback=self.eraseAction,
             parent=self.iface.mainWindow())
         self.add_action(
             ':/plugins/redLayer/icons/remove.svg',
-            text=self.tr(u'remove sketches from map'),
+            text=self.tr(u'Remove all sketches'),
             callback=self.removeSketchesAction,
             parent=self.iface.mainWindow())
         self.noteButton = self.add_action(
             ':/plugins/redLayer/icons/note.svg',
-            text=self.tr(u'export sketches to Memory layer'),
+            text=self.tr(u'Add text annotations to sketches'),
             callback=None,
             parent=self.iface.mainWindow())
         canvasButton.setMenu(self.canvasMenu())
