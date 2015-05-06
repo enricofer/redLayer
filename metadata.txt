@@ -22,13 +22,13 @@ email=enricofer@gmail.com
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=annotations,sketch,draw,
+tags=annotations, sketch, draw, pen, 
 
 homepage=http://geogear.wordpress.org
 tracker=https://github.com/enricofer/redLayer/issues
 repository=https://github.com/enricofer/redLayer
 category=Plugins
-icon=icons/sketch.png
+icon=icons/sketch.svg
 # experimental flag
 experimental=False
 

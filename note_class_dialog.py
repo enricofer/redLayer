@@ -22,6 +22,7 @@
 """
 
 #from PyQt4 import QtCore, QtGui
+import time
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -33,6 +34,7 @@ from qgis.gui import *
 # create the dialog for zoom to point
 
 
+
 class sketchNoteDialog(QDialog, Ui_noteDialog):
     def __init__(self, iface):
         QDialog.__init__(self)
@@ -41,25 +43,58 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
         # self.<objectname>, and you can use autoconnect slots - see
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
-        print "note"
         self.setupUi(self)
+        self.hide()
         self.buttonBox.accepted.connect(self.mkNote)
         self.buttonBox.rejected.connect(self.cancel)
+        self.note = None
         self.iface = iface
 
-    def newPoint(self,p):
+    def setPoint(self,p):
         self.point = p
-        self.show()
+
+    def getNote(self):
+        return self.note
+
+    def getAnnotation(self):
+        try:
+            return self.textItem
+        except:
+            return None
 
     def cancel(self):
+        self.note = ""
         #self.hide()
         pass
 
     def mkNote(self):
-        TD =QTextDocument(self.noteText.toPlainText())
-        textItem = QgsTextAnnotationItem( self.iface.mapCanvas() )
-        textItem.setMapPosition(self.point)
-        textItem.setFrameSize(TD.size())
-        textItem.setDocument(TD)
-        textItem.update()
+        self.textItem = self.mkAnnotation(self.noteText.toPlainText(),self.point)
+        self.note = self.noteText.toPlainText()
         self.noteText.clear()
+
+    def mkAnnotation(self,doc,p):
+        TD =QTextDocument(doc)
+        item = QgsTextAnnotationItem( self.iface.mapCanvas() )
+        item.setMapPosition(p)
+        item.setFrameSize(TD.size())
+        item.setDocument(TD)
+        item.update()
+        return item
+        
+
+    @staticmethod
+    def newPoint(iface,p,txt = None):
+        dialog = sketchNoteDialog(iface)
+        dialog.setPoint(p)
+        if not txt:
+            print "interactive"
+            result = dialog.exec_()
+            dialog.show()
+            if QDialog.Accepted:
+                return dialog.getAnnotation()
+            else:
+                return None
+        else:
+            print "non interactive"
+            return dialog.mkAnnotation(txt,p)
+            
