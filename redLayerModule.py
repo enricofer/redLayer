@@ -214,6 +214,7 @@ class redLayer(QgsMapTool):
         self.sketchEnabled(None)
         self.iface.projectRead.connect(self.projectReadAction)
         self.iface.newProjectCreated.connect(self.newProjectCreatedAction)
+        QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
 
     def canvasMenu(self):
         contextMenu = QMenu()
@@ -352,6 +353,7 @@ class redLayer(QgsMapTool):
     def canvasReleaseEvent(self, event):
         self.pressed=None
         self.gestures += 1
+        QgsProject.instance().setDirty(True)
         if self.canvasAction == "sketch" and self.noteButton.isChecked():
             midIdx = -int(self.points/2)
             annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry().vertexAt(0))
@@ -360,15 +362,26 @@ class redLayer(QgsMapTool):
                 self.geoSketches[midIdx][4] = annotation.document().toPlainText()
             self.annotatatedSketch = True
 
-
-
+    def notSavedProjectAction(self):
+        print "layer loaded!"
+        self.sketchEnabled(True)
+        QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+        
     def newProjectCreatedAction(self):
         #remove current sketches
+        try:
+            QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
+        except:
+            pass
         self.removeSketchesAction()
         self.sketchEnabled(None)
 
     def projectReadAction(self):
         #remove current sketches
+        try:
+            QgsMapLayerRegistry.instance().layerLoaded.disconnect(self.notSavedProjectAction)
+        except:
+            pass
         try:
             self.removeSketchesAction()
             #connect to signal to save sketches along with project file

@@ -1,0 +1,5 @@
+R1.0
+First release
+
+R1.1 
+Toolbar disabled when project is not saved. issue fixed
