@@ -33,6 +33,7 @@ import resources_rc
 from qgis.core import *
 from qgis.utils import *
 from qgis.gui import *
+from gesturesModule import gestures,sketchGesture
 
 from note_class_dialog import sketchNoteDialog
 import os.path
@@ -204,7 +205,6 @@ class redLayer(QgsMapTool):
             parent=self.iface.mainWindow())
         self.canvasButton.setMenu(self.canvasMenu())
         self.noteButton.setCheckable (True)
-        self.geoSketches = []
         self.dumLayer = QgsVectorLayer("Point?crs=EPSG:4326", "temporary_points", "memory")
         self.pressed=None
         self.currentColor = QColor("#aa0000")
@@ -215,6 +215,9 @@ class redLayer(QgsMapTool):
         self.iface.projectRead.connect(self.projectReadAction)
         self.iface.newProjectCreated.connect(self.newProjectCreatedAction)
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
+
+        self.geoSketches = gestures()
+
 
     def canvasMenu(self):
         contextMenu = QMenu()
@@ -275,7 +278,7 @@ class redLayer(QgsMapTool):
         pass
         
     def colorPaletteFunc(self):
-        self.currentColor = QgsColorDialogV2.getColor(self.currentColor,None)
+        self.geoSketches.setCurrentColor (QgsColorDialogV2.getColor(self.currentColor,None))
         
     def width2Func(self):
         self.currentWidth = 2
