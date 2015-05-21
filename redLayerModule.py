@@ -365,7 +365,10 @@ class redLayer(QgsMapTool):
     def notSavedProjectAction(self):
         print "layer loaded!"
         self.sketchEnabled(True)
-        QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+        try:
+            QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+        except:
+            pass
         
     def newProjectCreatedAction(self):
         #remove current sketches
