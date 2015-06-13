@@ -50,8 +50,8 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
         self.note = None
         self.iface = iface
 
-    def setPoint(self,p):
-        self.point = p
+    def setPoint(self,segment):
+        self.point = self.midPoint(segment)
 
     def getNote(self):
         return self.note
@@ -68,24 +68,33 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
         pass
 
     def mkNote(self):
-        self.textItem = self.mkAnnotation(self.noteText.toPlainText(),self.point)
+        self.textItem = self.mkAnnotation(self.noteText.toPlainText())
         self.note = self.noteText.toPlainText()
         self.noteText.clear()
 
-    def mkAnnotation(self,doc,p):
-        TD =QTextDocument(doc)
-        item = QgsTextAnnotationItem( self.iface.mapCanvas() )
-        item.setMapPosition(p)
-        item.setFrameSize(TD.size())
-        item.setDocument(TD)
-        item.update()
-        return item
-        
+    def mkAnnotation(self,doc):
+        if self.point:
+            TD =QTextDocument(doc)
+            item = QgsTextAnnotationItem( self.iface.mapCanvas() )
+            item.setMapPosition(self.point)
+            item.setFrameSize(TD.size())
+            item.setDocument(TD)
+            item.update()
+            return item
+        else:
+            print "invalin insert point"
+            return None
+
+    def midPoint(self,s):
+       x = (s.vertexAt(0).x() + s.vertexAt(1).x())/2
+       y = (s.vertexAt(0).y() + s.vertexAt(1).y())/2
+       return QgsPoint(x,y)
 
     @staticmethod
-    def newPoint(iface,p,txt = None):
+    def newPoint(iface,segment,txt = None):
         dialog = sketchNoteDialog(iface)
-        dialog.setPoint(p)
+
+        dialog.setPoint(segment)
         if not txt:
             print "interactive"
             result = dialog.exec_()
@@ -96,5 +105,5 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
                 return None
         else:
             print "non interactive"
-            return dialog.mkAnnotation(txt,p)
+            return dialog.mkAnnotation(txt)
             

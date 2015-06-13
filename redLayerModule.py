@@ -33,11 +33,11 @@ import resources_rc
 from qgis.core import *
 from qgis.utils import *
 from qgis.gui import *
-from gesturesModule import gestures,sketchGesture
 
 from note_class_dialog import sketchNoteDialog
 import os.path
 import json
+import math
 
 
 class redLayer(QgsMapTool):
@@ -178,6 +178,11 @@ class redLayer(QgsMapTool):
             text=self.tr(u'Sketch on map'),
             callback=self.sketchAction,
             parent=self.iface.mainWindow())
+        self.penButton = self.add_action(
+            ':/plugins/redLayer/icons/pen.svg',
+            text=self.tr(u'Draw line on map'),
+            callback=self.penAction,
+            parent=self.iface.mainWindow())
         self.canvasButton = self.add_action(
             ':/plugins/redLayer/icons/canvas.svg',
             text=self.tr(u'Color and width canvas'),
@@ -205,8 +210,15 @@ class redLayer(QgsMapTool):
             parent=self.iface.mainWindow())
         self.canvasButton.setMenu(self.canvasMenu())
         self.noteButton.setCheckable (True)
+        self.penButton.setCheckable (True)
+        self.sketchButton.setCheckable (True)
+        self.eraseButton.setCheckable (True)
+        self.geoSketches = []
         self.dumLayer = QgsVectorLayer("Point?crs=EPSG:4326", "temporary_points", "memory")
         self.pressed=None
+        self.previousPoint = None
+        self.previousMoved = None
+        self.points = 0
         self.currentColor = QColor("#aa0000")
         self.currentWidth = 5
         self.annotation = sketchNoteDialog(self.iface)
@@ -215,9 +227,6 @@ class redLayer(QgsMapTool):
         self.iface.projectRead.connect(self.projectReadAction)
         self.iface.newProjectCreated.connect(self.newProjectCreatedAction)
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
-
-        self.geoSketches = gestures()
-
 
     def canvasMenu(self):
         contextMenu = QMenu()
@@ -239,6 +248,7 @@ class redLayer(QgsMapTool):
         self.enabled = enabled
         if enabled:
             self.sketchButton.setEnabled(True)
+            self.penButton.setEnabled(True)
             self.canvasButton.setEnabled(True)
             self.eraseButton.setEnabled(True)
             self.removeButton.setEnabled(True)
@@ -246,6 +256,7 @@ class redLayer(QgsMapTool):
             self.convertButton.setEnabled(True)
         else:
             self.sketchButton.setDisabled(True)
+            self.penButton.setDisabled(True)
             self.canvasButton.setDisabled(True)
             self.eraseButton.setDisabled(True)
             self.removeButton.setDisabled(True)
@@ -272,13 +283,17 @@ class redLayer(QgsMapTool):
         self.canvasAction = "sketch"
 
     def penAction(self):
-        pass
+        gsvMessage="Click on map and drag to draw a line"
+        self.iface.mainWindow().statusBar().showMessage(gsvMessage)
+        self.dumLayer.setCrs(self.iface.mapCanvas().mapRenderer().destinationCrs())
+        self.canvas.setMapTool(self)
+        self.canvasAction = "pen"
 
     def canvasAction(self):
         pass
         
     def colorPaletteFunc(self):
-        self.geoSketches.setCurrentColor (QgsColorDialogV2.getColor(self.currentColor,None))
+        self.currentColor = QgsColorDialogV2.getColor(self.currentColor,None)
         
     def width2Func(self):
         self.currentWidth = 2
@@ -310,37 +325,100 @@ class redLayer(QgsMapTool):
         self.gestures = 0
         self.annotatatedSketch = None
 
+    def ex_activate(self):
+        if self.canvasAction == "sketch":
+            self.sketchButton.setChecked(True)
+        if self.canvasAction == "pen":
+            self.penButton.setChecked(True)
+
+    def deactivate(self):
+        if self.canvasAction == "sketch":
+            self.sketchButton.setChecked(False)
+            self.points = 0
+        if self.canvasAction == "pen":
+            self.penButton.setChecked(False)
+            self.previousPoint = None
+            self.previousMoved = None
+            self.gestures += 1
+            self.points = 0
+        if self.canvasAction == "erase":
+            self.eraseButton.setChecked(False)
 
     def canvasPressEvent(self, event):
         # Press event handler inherited from QgsMapTool used to store the given location in WGS84 long/lat
-        self.pressed=True
-        self.px = event.pos().x()
-        self.py = event.pos().y()
-        self.pressedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(self.px, self.py)
-        self.points = 0
-        if self.canvasAction == "sketch_":
-            self.sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
-            self.sketch.setWidth(self.currentWidth)
-            self.sketch.setColor(self.currentColor)
-            self.sketch.addPoint(self.pressedPoint)
+        if event.button() == Qt.RightButton:
+            print "rightbutton"
+            if self.noteButton.isChecked():
+                midIdx = -int(self.points/2)
+                if midIdx == 0:
+                    midIdx = -1
+                annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry())
+                if annotation:
+                    self.geoSketches[-1][3] = annotation
+                    self.geoSketches[-1][4] = annotation.document().toPlainText()
+                self.annotatatedSketch = True
+            self.gestures += 1
+            self.points = 0
+            self.penAction()
+            self.previousPoint = None
+            self.previousMoved = None
+            self.movedPoint = None
+            self.pressed = None
+            self.dragged = None
+        else:
+            self.pressed=True
+            self.dragged = None
+            self.movedPoint = None
+            self.px = event.pos().x()
+            self.py = event.pos().y()
+            self.pressedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(self.px, self.py)
+            if self.canvasAction == "sketch":
+                self.points = 0
+            if self.canvasAction == "pen":
+                self.snapSys = self.iface.mapCanvas().snappingUtils()
+                snappedPoint = self.snapSys.snapToMap(self.pressedPoint)
+                if snappedPoint.isValid():
+                    self.pressedPoint = snappedPoint.point()
+                self.sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
+                self.sketch.setWidth(self.currentWidth)
+                self.sketch.setColor(self.currentColor)
+                self.sketch.addPoint(self.pressedPoint)
 
     def canvasMoveEvent(self, event):
         # Moved event handler inherited from QgsMapTool needed to highlight the direction that is giving by the user
         if self.pressed:
             x = event.pos().x()
             y = event.pos().y()
-            movedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+            self.movedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
             if self.canvasAction == "sketch":
                 if abs(x-self.px)>3 or abs(y-self.py)>3:
                     sketch=QgsRubberBand(self.iface.mapCanvas(),QGis.Line )
                     sketch.setWidth(self.currentWidth)
                     sketch.setColor(self.currentColor)
                     sketch.addPoint(self.pressedPoint)
-                    sketch.addPoint(movedPoint)
-                    self.pressedPoint = movedPoint
+                    sketch.addPoint(self.movedPoint)
+                    self.pressedPoint = self.movedPoint
                     self.points += 1
                     self.geoSketches.append([self.currentColor.name(),str(self.currentWidth),sketch,None,"",self.gestures])
                     self.px = x; self.py = y
+                    
+            if self.canvasAction == "pen":
+                if not QgsGeometry.fromPoint(self.movedPoint).equals(QgsGeometry.fromPoint(self.pressedPoint)):
+                    self.dragged = True
+                    self.snapSys = self.iface.mapCanvas().snappingUtils()
+                    snappedPoint = self.snapSys.snapToMap(self.movedPoint)
+                    if snappedPoint.isValid():
+                        self.movedPoint = snappedPoint.point()
+                    self.sketch.reset()
+                    if self.previousPoint:
+                        self.sketch.addPoint(self.previousPoint)
+                    else:
+                        self.sketch.addPoint(self.pressedPoint)
+                    self.sketch.addPoint(self.movedPoint)
+                    self.iface.mainWindow().statusBar().showMessage("Sketch lenght: %s" % math.sqrt(self.pressedPoint.sqrDist(self.movedPoint)))
+                else:
+                    self.dragged = None
+                    
             if self.canvasAction == "erase":
                 cursor = QgsRectangle (self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
                 for sketch in self.geoSketches:
@@ -354,21 +432,48 @@ class redLayer(QgsMapTool):
 
 
     def canvasReleaseEvent(self, event):
+        if event.button() == Qt.RightButton:
+            return
         self.pressed=None
-        self.gestures += 1
         QgsProject.instance().setDirty(True)
+        if self.canvasAction == "pen":
+            if not self.dragged:
+                if self.previousPoint:
+                    self.sketch.addPoint(self.previousPoint)
+                    self.sketch.addPoint(self.pressedPoint)
+                    self.previousPoint = self.pressedPoint
+                else:
+                    self.previousPoint = self.pressedPoint
+                    return
+            elif self.previousMoved:
+                self.previousMoved = None
+                self.sketch.addPoint(self.previousPoint)
+                self.sketch.addPoint(self.movedPoint)
+                self.previousPoint = self.movedPoint
+                
+            else:
+                self.previousPoint = self.movedPoint
+                self.previousMoved = True
+            self.geoSketches.append([self.currentColor.name(),str(self.currentWidth),self.sketch,None,"",self.gestures])
+            self.points += 1 
+
         if self.canvasAction == "sketch" and self.noteButton.isChecked():
-            midIdx = -int(self.points/2)
-            annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry().vertexAt(0))
-            if annotation:
-                self.geoSketches[midIdx][3] = annotation
-                self.geoSketches[midIdx][4] = annotation.document().toPlainText()
-            self.annotatatedSketch = True
+            if self.points > 0:
+                midIdx = -int(self.points/2)
+                annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry())
+                if annotation:
+                    self.geoSketches[midIdx][3] = annotation
+                    self.geoSketches[midIdx][4] = annotation.document().toPlainText()
+                self.annotatatedSketch = True
+                self.gestures += 1
 
     def notSavedProjectAction(self):
         print "layer loaded!"
         self.sketchEnabled(True)
-        QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+        try:
+            QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+        except:
+            pass
         
     def newProjectCreatedAction(self):
         #remove current sketches
@@ -453,7 +558,7 @@ class redLayer(QgsMapTool):
     def recoverAllAnnotations(self):
         for sketch in self.geoSketches:
             if sketch[4] != "":
-                sketch[3] = sketchNoteDialog.newPoint(self.iface,sketch[2].asGeometry().vertexAt(0),txt = sketch[4])
+                sketch[3] = sketchNoteDialog.newPoint(self.iface,sketch[2].asGeometry(),txt = sketch[4])
 
     def loadSketches(self):
         self.geoSketches = []
@@ -473,7 +578,7 @@ class redLayer(QgsMapTool):
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]),dumLayer)
                 if inline[3] != "":
                     annotationText = inline[3].replace("%%N%%","\n")
-                    annotationObject = sketchNoteDialog.newPoint(self.iface,QgsGeometry.fromWkt(inline[2]).vertexAt(0),txt = annotationText)
+                    annotationObject = sketchNoteDialog.newPoint(self.iface,QgsGeometry.fromWkt(inline[2]),txt = annotationText)
                     self.annotatatedSketch = True
                 else:
                     annotationObject = None
