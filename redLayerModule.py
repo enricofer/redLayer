@@ -218,6 +218,7 @@ class redLayer(QgsMapTool):
         self.pressed=None
         self.previousPoint = None
         self.previousMoved = None
+        self.self.gestures = 0
         self.points = 0
         self.currentColor = QColor("#aa0000")
         self.currentWidth = 5
