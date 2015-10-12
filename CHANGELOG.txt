@@ -9,3 +9,6 @@ throws error opening new project issue fixed
 
 R1.3
 Line tool added
+
+R1.3.1
+self.gestures exception fixed

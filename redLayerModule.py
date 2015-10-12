@@ -402,7 +402,6 @@ class redLayer(QgsMapTool):
                     self.points += 1
                     self.geoSketches.append([self.currentColor.name(),str(self.currentWidth),sketch,None,"",self.gestures])
                     self.px = x; self.py = y
-
             if self.canvasAction == "pen":
                 if not QgsGeometry.fromPoint(self.movedPoint).equals(QgsGeometry.fromPoint(self.pressedPoint)):
                     self.dragged = True
