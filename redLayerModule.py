@@ -107,7 +107,8 @@ class redLayer(QgsMapTool):
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
+        parent=None,
+        object_name=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -142,6 +143,9 @@ class redLayer(QgsMapTool):
         :param whats_this: Optional text to show in the status bar when the
             mouse pointer hovers over the action.
 
+        :param object_name: Optional name to identify objects during customization
+        :type object_name: str
+
         :returns: The action that was created. Note that the action is also
             added to self.actions list.
         :rtype: QAction
@@ -167,6 +171,9 @@ class redLayer(QgsMapTool):
                 self.menu,
                 action)
 
+        if object_name is not None:
+            action.setObjectName(object_name)
+
         self.actions.append(action)
 
         return action
@@ -177,12 +184,14 @@ class redLayer(QgsMapTool):
             ':/plugins/redLayer/icons/sketch.svg',
             text=self.tr(u'Sketch on map'),
             callback=self.sketchAction,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mSketchAction')
         self.penButton = self.add_action(
             ':/plugins/redLayer/icons/pen.svg',
             text=self.tr(u'Draw line on map'),
             callback=self.penAction,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mPenAction')
         self.canvasButton = self.add_action(
             ':/plugins/redLayer/icons/canvas.svg',
             text=self.tr(u'Color and width canvas'),
@@ -192,22 +201,26 @@ class redLayer(QgsMapTool):
             ':/plugins/redLayer/icons/erase.svg',
             text=self.tr(u'Erase sketches'),
             callback=self.eraseAction,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mEraseAction')
         self.removeButton = self.add_action(
             ':/plugins/redLayer/icons/remove.svg',
             text=self.tr(u'Remove all sketches'),
             callback=self.removeSketchesAction,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mRemoveAllSketches')
         self.noteButton = self.add_action(
             ':/plugins/redLayer/icons/note.svg',
             text=self.tr(u'Add text annotations to sketches'),
             callback=None,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mAddTextAnnotations')
         self.convertButton = self.add_action(
             ':/plugins/redLayer/icons/toLayer.svg',
             text=self.tr(u'Convert annotations to Memory Layer'),
             callback=self.toMemoryLayerAction,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            object_name='mConvertAnnotationsToMemoryLayer')
         self.canvasButton.setMenu(self.canvasMenu())
         self.noteButton.setCheckable (True)
         self.penButton.setCheckable (True)
@@ -231,15 +244,21 @@ class redLayer(QgsMapTool):
 
     def canvasMenu(self):
         contextMenu = QMenu()
+        contextMenu.setObjectName('mColorAndWidth')
         self.colorPaletteAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorPalette.png")),"")
+        self.colorPaletteAction.setObjectName('mColorPalette')
         self.colorPaletteAction.triggered.connect(self.colorPaletteFunc)
         self.width2Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width2.png")),"")
+        self.width2Action.setObjectName('mWidth2size')
         self.width2Action.triggered.connect(self.width2Func)
         self.width4Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width4.png")),"")
+        self.width4Action.setObjectName('mWidth4size')
         self.width4Action.triggered.connect(self.width4Func)
         self.width8Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width8.png")),"")
+        self.width8Action.setObjectName('mWidth8size')
         self.width8Action.triggered.connect(self.width8Func)
         self.width16Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width16.png")),"")
+        self.width16Action.setObjectName('mWidth16size')
         self.width16Action.triggered.connect(self.width16Func)
         return contextMenu
 
