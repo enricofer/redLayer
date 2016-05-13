@@ -621,7 +621,7 @@ class redLayer(QgsMapTool):
             fileName = QFileDialog.getOpenFileName(None,"Open RedLayer sketches file", workDir, "*.sketch");
         else:
             return
-        if self.sketchFileInfo.exists() or fileName:
+        if fileName or self.sketchFileInfo.exists():
             if fileName:
                 infile = open(fileName, 'r')
             else:
