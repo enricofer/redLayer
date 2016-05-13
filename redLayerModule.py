@@ -221,6 +221,18 @@ class redLayer(QgsMapTool):
             callback=self.toMemoryLayerAction,
             parent=self.iface.mainWindow(),
             object_name='mConvertAnnotationsToMemoryLayer')
+        self.saveButton = self.add_action(
+            ':/plugins/redLayer/icons/inbox.svg',
+            text=self.tr(u'Save sketches to file'),
+            callback=self.saveAction,
+            parent=self.iface.mainWindow(),
+            object_name='mSaveSketchesToFile')
+        self.loadButton = self.add_action(
+            ':/plugins/redLayer/icons/outbox.svg',
+            text=self.tr(u'Load sketches from file'),
+            callback=self.loadAction,
+            parent=self.iface.mainWindow(),
+            object_name='mLoadSketchesFromFile')
         self.canvasButton.setMenu(self.canvasMenu())
         self.noteButton.setCheckable (True)
         self.penButton.setCheckable (True)
@@ -274,6 +286,8 @@ class redLayer(QgsMapTool):
             self.removeButton.setEnabled(True)
             self.noteButton.setEnabled(True)
             self.convertButton.setEnabled(True)
+            self.loadButton.setEnabled(True)
+            self.saveButton.setEnabled(True)
         else:
             self.sketchButton.setDisabled(True)
             self.penButton.setDisabled(True)
@@ -282,6 +296,8 @@ class redLayer(QgsMapTool):
             self.removeButton.setDisabled(True)
             self.noteButton.setDisabled(True)
             self.convertButton.setDisabled(True)
+            self.loadButton.setDisabled(True)
+            self.saveButton.setDisabled(True)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -337,6 +353,12 @@ class redLayer(QgsMapTool):
     def exportAction(self):
         pass
 
+    def loadAction(self):
+        self.loadSketches(userFile=True)
+
+    def saveAction(self):
+        self.saveSketches(userFile=True)
+
     def removeSketchesAction(self):
         self.removeAllAnnotations()
         for sketch in self.geoSketches:
@@ -365,7 +387,7 @@ class redLayer(QgsMapTool):
             self.eraseButton.setChecked(False)
 
     def canvasPressEvent(self, event):
-        # Press event handler inherited from QgsMapTool used to store the given location in WGS84 long/lat
+        # Press event handler inherited from QgsMapTool
         if event.button() == Qt.RightButton:
             print "rightbutton"
             if self.noteButton.isChecked():
@@ -546,10 +568,22 @@ class redLayer(QgsMapTool):
         #print "AFTER SAVE"
         #self.recoverAllAnnotations()
         
-    def saveSketches(self):
+    def saveSketches(self, userFile=None):
         if self.geoSketches != []:
             print "SAVING SKETCHES"
-            outfile = open(self.sketchFileInfo.absoluteFilePath(), 'w')
+            if userFile:
+                workDir = QgsProject.instance().readPath("./")
+                fileName = QFileDialog().getSaveFileName(None,"Save RedLayer sketches", workDir, "*.sketch");
+                if QFileInfo(fileName).suffix() != "sketch":
+                    fileName += ".sketch"
+                    if QFileInfo(fileName).exists():
+                        reply = QMessageBox.question(None, 'confirm', "File %s exists. \nOverwrite?" % fileName, QMessageBox.Yes, QMessageBox.No)
+                        if reply == QMessageBox.No:
+                            fileName = None
+                            return
+                outfile = open(fileName, 'w')
+            else:
+                outfile = open(self.sketchFileInfo.absoluteFilePath(), 'w')
             for sketch in self.geoSketches:
                 if sketch[2].asGeometry():
                     try:
@@ -579,11 +613,19 @@ class redLayer(QgsMapTool):
             if sketch[4] != "":
                 sketch[3] = sketchNoteDialog.newPoint(self.iface,sketch[2].asGeometry(),txt = sketch[4])
 
-    def loadSketches(self):
+    def loadSketches(self, userFile=None):
         self.geoSketches = []
         self.annotatatedSketch = None
-        if self.sketchFileInfo.exists():
-            infile = open(self.sketchFileInfo.filePath(), 'r')
+        if userFile:
+            workDir = QgsProject.instance().readPath("./")
+            fileName = QFileDialog.getOpenFileName(None,"Open RedLayer sketches file", workDir, "*.sketch");
+        else:
+            return
+        if self.sketchFileInfo.exists() or fileName:
+            if fileName:
+                infile = open(fileName, 'r')
+            else:
+                infile = open(self.sketchFileInfo.filePath(), 'r')
             canvas = self.iface.mapCanvas()
             mapRenderer = canvas.mapRenderer()
             srs=mapRenderer.destinationCrs()
