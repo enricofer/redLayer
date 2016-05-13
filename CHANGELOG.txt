@@ -12,3 +12,6 @@ Line tool added
 
 R1.3.1
 self.gestures exception fixed
+
+R1.4
+Open and save sketches to file feature
