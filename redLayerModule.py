@@ -389,7 +389,6 @@ class redLayer(QgsMapTool):
     def canvasPressEvent(self, event):
         # Press event handler inherited from QgsMapTool
         if event.button() == Qt.RightButton:
-            print "rightbutton"
             if self.noteButton.isChecked():
                 midIdx = -int(self.points/2)
                 if midIdx == 0:
@@ -509,7 +508,6 @@ class redLayer(QgsMapTool):
                 self.gestures += 1
 
     def notSavedProjectAction(self):
-        print "layer loaded!"
         self.sketchEnabled(True)
         try:
             QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
@@ -531,6 +529,7 @@ class redLayer(QgsMapTool):
             QgsMapLayerRegistry.instance().layerLoaded.disconnect(self.notSavedProjectAction)
         except:
             pass
+            
         try:
             self.removeSketchesAction()
             #connect to signal to save sketches along with project file
@@ -542,11 +541,10 @@ class redLayer(QgsMapTool):
             self.loadSketches()
             self.sketchEnabled(True)
         except:
-            print "no project error"
-            pass
+            print "Error connecting to project signals"
 
     def beforeSaveProjectAction(self,domDoc):
-    #method to expunge redlayer annotation from annotation ready to to save
+        #method to expunge redlayer annotation from annotation ready to to save
         if self.annotatatedSketch:
             annotationStrings = []
             for sketch in self.geoSketches:
@@ -565,12 +563,10 @@ class redLayer(QgsMapTool):
 
     def afterSaveProjectAction(self):
         pass
-        #print "AFTER SAVE"
         #self.recoverAllAnnotations()
         
     def saveSketches(self, userFile=None):
         if self.geoSketches != []:
-            print "SAVING SKETCHES"
             if userFile:
                 workDir = QgsProject.instance().readPath("./")
                 fileName = QFileDialog().getSaveFileName(None,"Save RedLayer sketches", workDir, "*.sketch");
@@ -618,14 +614,11 @@ class redLayer(QgsMapTool):
         self.annotatatedSketch = None
         if userFile:
             workDir = QgsProject.instance().readPath("./")
-            fileName = QFileDialog.getOpenFileName(None,"Open RedLayer sketches file", workDir, "*.sketch");
+            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(None,"Open RedLayer sketches file", workDir, "*.sketch"));
         else:
-            return
-        if fileName or self.sketchFileInfo.exists():
-            if fileName:
-                infile = open(fileName, 'r')
-            else:
-                infile = open(self.sketchFileInfo.filePath(), 'r')
+            fileNameInfo = self.sketchFileInfo
+        if fileNameInfo.exists():
+            infile = open(fileNameInfo.filePath(), 'r')
             canvas = self.iface.mapCanvas()
             mapRenderer = canvas.mapRenderer()
             srs=mapRenderer.destinationCrs()
@@ -664,8 +657,6 @@ class redLayer(QgsMapTool):
                 else:
                     lastPoint = None
                     gestureId +=1
-        #print "POLYGESTURES\n",polyGestures
-        #print gestureId, polyGestures.keys()
         sketchLayer = QgsVectorLayer("LineString", "Sketch Layer", "memory")
         sketchLayer.setCrs(self.iface.mapCanvas().mapRenderer().destinationCrs())
         sketchLayer.startEditing()
