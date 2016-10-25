@@ -360,7 +360,6 @@ class redLayer(QgsMapTool):
         self.saveSketches(userFile=True)
 
     def removeSketchesAction(self):
-        self.removeAllAnnotations()
         for sketch in self.geoSketches:
             sketch[2].reset()
         self.geoSketches = []
@@ -559,11 +558,13 @@ class redLayer(QgsMapTool):
                 if annotationDocument.toPlainText() in annotationStrings: # erase only redlayer annotations
                     parent = node.parentNode()
                     parent.removeChild(node)
-        self.saveSketches()
+        
 
     def afterSaveProjectAction(self):
-        pass
-        #self.recoverAllAnnotations()
+        #method used for saving sketches file along with project file
+        self.projectFileInfo = QFileInfo(QgsProject.instance().fileName())
+        self.sketchFileInfo = QFileInfo(os.path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
+        self.saveSketches()
         
     def saveSketches(self, userFile=None):
         if self.geoSketches != []:
