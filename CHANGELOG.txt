@@ -18,3 +18,9 @@ Open and save sketches to file feature
 
 R1.4.1
 load issue fixed
+
+R1.4.2 
+erase existing annotations on load issue fix and save project as issues fixed
+
+R1.4.3 
+erase all action does not erase annotations issue fixed

@@ -362,6 +362,11 @@ class redLayer(QgsMapTool):
     def removeSketchesAction(self):
         for sketch in self.geoSketches:
             sketch[2].reset()
+            if sketch[3]:
+                try:
+                    self.iface.mapCanvas().scene().removeItem( sketch[3] )
+                except:
+                    pass
         self.geoSketches = []
         self.gestures = 0
         self.annotatatedSketch = None

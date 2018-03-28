@@ -10,7 +10,7 @@
 name=Red Layer
 qgisMinimumVersion=2.0
 description=quick georeferenced sketches and annotations
-version=1.4.2
+version=1.4.3
 author=Enrico Ferreguti
 email=enricofer@gmail.com
 about=A qgis plugin for sketching and drawing on map canvas. It is intended for quick annotations and field use. Sketches can be drawn in different colors and widths and can be converted in memory layer if needed. The sketches are stored in the project directory in a separate .sketch txt file that can be shared with other users. 
@@ -28,6 +28,7 @@ changelog= R1.0 First release
   R1.4 Open and save sketches to file feature
   R1.4.1 Loading issue fixed
   R1.4.2 erase existing annotations on load issue fix and save project as issues fixed
+  R1.4.3 erase all action does not erase annotations issue fixed
 
 # Tags are comma separated with spaces allowed
 tags=annotations, sketch, draw, pen, 
