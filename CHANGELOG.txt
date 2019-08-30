@@ -1,5 +1,5 @@
 R1.0
-First release
+First QGIS2 release
 
 R1.1 
 Toolbar disabled when project is not saved. issue fixed
@@ -24,3 +24,6 @@ erase existing annotations on load issue fix and save project as issues fixed
 
 R1.4.3 
 erase all action does not erase annotations issue fixed
+
+R2.0.0
+QGIS3 migration

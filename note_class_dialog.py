@@ -24,25 +24,22 @@
 #from PyQt4 import QtCore, QtGui
 import time
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from ui_note_dialog import Ui_noteDialog
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5 import uic
 
 from qgis.core import *
 from qgis.utils import *
 from qgis.gui import *
 # create the dialog for zoom to point
 
+FORM_CLASS, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'ui_note_dialog.ui'))
 
-
-class sketchNoteDialog(QDialog, Ui_noteDialog):
-    def __init__(self, iface):
-        QDialog.__init__(self)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
+class sketchNoteDialog(QDialog, FORM_CLASS):
+    def __init__(self, iface, parent=None):
+        super(sketchNoteDialog, self).__init__(parent)
         self.setupUi(self)
         self.hide()
         self.buttonBox.accepted.connect(self.mkNote)
@@ -75,20 +72,19 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
     def mkAnnotation(self,doc):
         if self.point:
             TD =QTextDocument(doc)
-            item = QgsTextAnnotationItem( self.iface.mapCanvas() )
+            item = QgsTextAnnotation()
             item.setMapPosition(self.point)
             item.setFrameSize(TD.size())
             item.setDocument(TD)
-            item.update()
+            i = QgsMapCanvasAnnotationItem(item, self.iface.mapCanvas())
             return item
         else:
-            print "invalin insert point"
-            return None
+            return
 
     def midPoint(self,s):
        x = (s.vertexAt(0).x() + s.vertexAt(1).x())/2
        y = (s.vertexAt(0).y() + s.vertexAt(1).y())/2
-       return QgsPoint(x,y)
+       return QgsPointXY(x,y)
 
     @staticmethod
     def newPoint(iface,segment,txt = None):
@@ -96,7 +92,6 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
 
         dialog.setPoint(segment)
         if not txt:
-            print "interactive"
             result = dialog.exec_()
             dialog.show()
             if QDialog.Accepted:
@@ -104,6 +99,5 @@ class sketchNoteDialog(QDialog, Ui_noteDialog):
             else:
                 return None
         else:
-            print "non interactive"
             return dialog.mkAnnotation(txt)
             

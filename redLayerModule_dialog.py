@@ -23,7 +23,7 @@
 
 import os
 
-from PyQt4 import QtGui, uic
+from PyQt5 import QtGui, QtWidgets, uic
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'redLayerModule_dialog_base.ui'))
