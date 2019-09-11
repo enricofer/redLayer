@@ -27,3 +27,6 @@ erase all action does not erase annotations issue fixed
 
 R2.0.0
 QGIS3 migration
+
+R2.0.1 
+ModuleNotFoundError issue fixed

@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKit import *
 from PyQt5 import uic
 # Initialize Qt resources from file resources.py
-import resources_rc
+#import resources_rc
 # Import the code for the dialog
 
 from qgis.core import *
