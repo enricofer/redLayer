@@ -258,7 +258,7 @@ class redLayer(QgsMapTool):
     def canvasMenu(self):
         contextMenu = QMenu()
         contextMenu.setObjectName('mColorAndWidth')
-        self.colorPaletteAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorPalette.png")),"color palette")
+        self.colorPaletteAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorPalette.png")),self.tr("color palette"))
         self.colorPaletteAction.setObjectName('mColorPalette')
         self.colorPaletteAction.triggered.connect(self.colorPaletteFunc)
         self.width2Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width2.png")),"2  pixels")
