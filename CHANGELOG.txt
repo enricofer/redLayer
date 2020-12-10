@@ -33,3 +33,6 @@ ModuleNotFoundError issue fixed
 
 R2.0.2
 French Translations added (courtesy of @SebastienPeillet)
+
+R2.0.3
+Fix for .sketch file issue (courtesy of Regis Hauburg @haubourg)
