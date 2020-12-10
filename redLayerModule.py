@@ -579,13 +579,13 @@ class redLayer(QgsMapTool):
                 fileName = QFileDialog().getSaveFileName(None,"Save RedLayer sketches", workDir, "*.sketch")
                 print (fileName)
                 if QFileInfo(fileName[0]).suffix() != "sketch":
-                    fileName[0] += ".sketch"
-                    if QFileInfo(fileName[0]).exists():
-                        reply = QMessageBox.question(None, 'confirm', "File %s exists. \nOverwrite?" % fileName[0], QMessageBox.Yes, QMessageBox.No)
+                    suffixedFileName = fileName[0] + ".sketch" 
+                    if QFileInfo(suffixedFileName).exists():
+                        reply = QMessageBox.question(None, 'confirm', "File %s exists. \nOverwrite?" % suffixedFileName, QMessageBox.Yes, QMessageBox.No)
                         if reply == QMessageBox.No:
-                            fileName = None
+                            suffixedFileName = None
                             return
-                outfile = open(fileName[0], 'w')
+                outfile = open(suffixedFileName, 'w')
             else:
                 outfile = open(self.sketchFileInfo.absoluteFilePath(), 'w')
             for sketch in self.geoSketches:
