@@ -368,6 +368,7 @@ class redLayer(QgsMapTool):
                     self.iface.mapCanvas().scene().removeItem( sketch[3] )
                 except:
                     pass
+        self.removeAllAnnotations()
         self.geoSketches = []
         self.gestures = 0
         self.annotatatedSketch = None
@@ -604,11 +605,11 @@ class redLayer(QgsMapTool):
 
     def removeAllAnnotations(self):
         #erase all annotation to prevent saving them along with project file
-        for item in self.iface.mapCanvas().scene().items():
+        annotationsList = self.iface.mapCanvas().annotationItems()
+        for item in annotationsList:
             try:
-                if item.mapPosition():
-                    self.iface.mapCanvas().scene().removeItem(item)
-                    del item
+                self.iface.mapCanvas().scene().removeItem(item)
+                del item
             except:
                 pass
 
