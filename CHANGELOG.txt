@@ -36,3 +36,6 @@ French Translations added (courtesy of @SebastienPeillet)
 
 R2.0.3
 Fix for .sketch file issue (courtesy of Regis Hauburg @haubourg)
+
+R2.0.4 
+Fix for QgsAnnotation API break (courtesy of @Fighterisr) 
