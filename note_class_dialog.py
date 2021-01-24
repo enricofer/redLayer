@@ -77,7 +77,7 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
             item.setFrameSize(TD.size())
             item.setDocument(TD)
             i = QgsMapCanvasAnnotationItem(item, self.iface.mapCanvas())
-            return item
+            return i
         else:
             return
 

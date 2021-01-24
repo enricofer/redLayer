@@ -364,9 +364,12 @@ class redLayer(QgsMapTool):
         for sketch in self.geoSketches:
             sketch[2].reset()
             if sketch[3]:
+                print (sketch[3])
                 try:
                     self.iface.mapCanvas().scene().removeItem( sketch[3] )
-                except:
+                    del(sketch[3])
+                except Exception as e:
+                    print ("Error:",e,sketch[3])
                     pass
         self.removeAllAnnotations()
         self.geoSketches = []
@@ -509,7 +512,7 @@ class redLayer(QgsMapTool):
                 annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry())
                 if annotation:
                     self.geoSketches[midIdx][3] = annotation
-                    self.geoSketches[midIdx][4] = annotation.document().toPlainText()
+                    self.geoSketches[midIdx][4] = annotation.annotation().document().toPlainText()
                 self.annotatatedSketch = True
                 self.gestures += 1
 
@@ -592,8 +595,9 @@ class redLayer(QgsMapTool):
             for sketch in self.geoSketches:
                 if sketch[2].asGeometry():
                     try:
-                        note = sketch[3].document().toPlainText().replace("\n","%%N%%")
-                    except:
+                        note = sketch[3].annotation().document().toPlainText().replace("\n","%%N%%")
+                    except Exception as e:
+                        print (e)
                         note = ""
                     outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt()+"|"+note+"|"+str(sketch[5])+'\n')
             outfile.close()
@@ -607,6 +611,7 @@ class redLayer(QgsMapTool):
         #erase all annotation to prevent saving them along with project file
         annotationsList = self.iface.mapCanvas().annotationItems()
         for item in annotationsList:
+            print(item)
             try:
                 self.iface.mapCanvas().scene().removeItem(item)
                 del item
@@ -640,7 +645,8 @@ class redLayer(QgsMapTool):
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]),dumLayer)
                 if inline[3] != "":
                     annotationText = inline[3].replace("%%N%%","\n")
-                    annotationObject = sketchNoteDialog.newPoint(self.iface,QgsGeometry.fromWkt(inline[2]),txt = annotationText)
+                    #annotationObject = sketchNoteDialog.newPoint(self.iface,QgsGeometry.fromWkt(inline[2]),txt = annotationText)
+                    annotationObject = None
                     self.annotatatedSketch = True
                 else:
                     annotationObject = None
@@ -648,6 +654,7 @@ class redLayer(QgsMapTool):
                 self.geoSketches.append([inline[0],inline[1],sketch,annotationObject,annotationText,int(inline[4])])
             self.gestures = int(inline[4])+1
             infile.close()
+            self.recoverAllAnnotations()
 
     def toMemoryLayerAction(self):
         polyGestures = {}
