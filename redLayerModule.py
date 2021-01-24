@@ -364,12 +364,10 @@ class redLayer(QgsMapTool):
         for sketch in self.geoSketches:
             sketch[2].reset()
             if sketch[3]:
-                print (sketch[3])
                 try:
                     self.iface.mapCanvas().scene().removeItem( sketch[3] )
                     del(sketch[3])
                 except Exception as e:
-                    print ("Error:",e,sketch[3])
                     pass
         self.removeAllAnnotations()
         self.geoSketches = []
@@ -581,7 +579,6 @@ class redLayer(QgsMapTool):
             if userFile:
                 workDir = QgsProject.instance().readPath("./")
                 fileName = QFileDialog().getSaveFileName(None,"Save RedLayer sketches", workDir, "*.sketch")
-                print (fileName)
                 if QFileInfo(fileName[0]).suffix() != "sketch":
                     suffixedFileName = fileName[0] + ".sketch" 
                     if QFileInfo(suffixedFileName).exists():
@@ -597,7 +594,6 @@ class redLayer(QgsMapTool):
                     try:
                         note = sketch[3].annotation().document().toPlainText().replace("\n","%%N%%")
                     except Exception as e:
-                        print (e)
                         note = ""
                     outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt()+"|"+note+"|"+str(sketch[5])+'\n')
             outfile.close()
@@ -611,7 +607,6 @@ class redLayer(QgsMapTool):
         #erase all annotation to prevent saving them along with project file
         annotationsList = self.iface.mapCanvas().annotationItems()
         for item in annotationsList:
-            print(item)
             try:
                 self.iface.mapCanvas().scene().removeItem(item)
                 del item
@@ -622,6 +617,7 @@ class redLayer(QgsMapTool):
         for sketch in self.geoSketches:
             if sketch[4] != "":
                 sketch[3] = sketchNoteDialog.newPoint(self.iface,sketch[2].asGeometry(),txt = sketch[4])
+                self.annotatatedSketch = True
 
     def loadSketches(self, userFile=None):
         self.geoSketches = []
@@ -643,15 +639,8 @@ class redLayer(QgsMapTool):
                 sketch.setWidth( int(inline[1]) )
                 sketch.setColor(QColor(inline[0]))
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]),dumLayer)
-                if inline[3] != "":
-                    annotationText = inline[3].replace("%%N%%","\n")
-                    #annotationObject = sketchNoteDialog.newPoint(self.iface,QgsGeometry.fromWkt(inline[2]),txt = annotationText)
-                    annotationObject = None
-                    self.annotatatedSketch = True
-                else:
-                    annotationObject = None
-                    annotationText = ""
-                self.geoSketches.append([inline[0],inline[1],sketch,annotationObject,annotationText,int(inline[4])])
+                annotationText = inline[3].replace("%%N%%","\n") if inline[3] else ""
+                self.geoSketches.append([inline[0],inline[1],sketch,None,annotationText,int(inline[4])])
             self.gestures = int(inline[4])+1
             infile.close()
             self.recoverAllAnnotations()
