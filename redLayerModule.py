@@ -82,15 +82,11 @@ class redLayer(QgsMapTool):
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
-        # Create the dialog (after translation) and keep reference
-        # self.dlg = redLayerDialog()
-
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Red Layer')
-        # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'redLayer')
-        self.toolbar.setObjectName(u'redLayer')
+        self.menu = self.tr('&Red Layer')
+        self.toolbar = self.iface.addToolBar('redLayer')
+        self.toolbar.setObjectName('redLayer')
         QgsMapTool.__init__(self, self.canvas)
 
     # noinspection PyMethodMayBeStatic
@@ -193,54 +189,54 @@ class redLayer(QgsMapTool):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         self.sketchButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'sketch.svg'),
-            text=self.tr(u'Sketch on map'),
+            text=self.tr('Sketch on map'),
             callback=self.sketchAction,
             parent=self.iface.mainWindow(),
             object_name='mSketchAction')
         self.penButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'pen.svg'),
-            text=self.tr(u'Draw line on map'),
+            text=self.tr('Draw line on map'),
             callback=self.penAction,
             parent=self.iface.mainWindow(),
             object_name='mPenAction')
         self.canvasButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'canvas.svg'),
-            text=self.tr(u'Color and width canvas'),
+            text=self.tr('Color and width canvas'),
             callback=None,
             parent=self.iface.mainWindow())
         self.eraseButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'erase.svg'),
-            text=self.tr(u'Erase sketches'),
+            text=self.tr('Erase sketches'),
             callback=self.eraseAction,
             parent=self.iface.mainWindow(),
             object_name='mEraseAction')
         self.removeButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'remove.svg'),
-            text=self.tr(u'Remove all sketches'),
+            text=self.tr('Remove all sketches'),
             callback=self.removeSketchesAction,
             parent=self.iface.mainWindow(),
             object_name='mRemoveAllSketches')
         self.noteButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'note.svg'),
-            text=self.tr(u'Add text annotations to sketches'),
+            text=self.tr('Add text annotations to sketches'),
             callback=None,
             parent=self.iface.mainWindow(),
             object_name='mAddTextAnnotations')
         self.convertButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'toLayer.svg'),
-            text=self.tr(u'Convert annotations to Memory Layer'),
+            text=self.tr('Convert annotations to Memory Layer'),
             callback=self.toMemoryLayerAction,
             parent=self.iface.mainWindow(),
             object_name='mConvertAnnotationsToMemoryLayer')
         self.saveButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'inbox.svg'),
-            text=self.tr(u'Save sketches to file'),
+            text=self.tr('Save sketches to file'),
             callback=self.saveAction,
             parent=self.iface.mainWindow(),
             object_name='mSaveSketchesToFile')
         self.loadButton = self.add_action(
             path.join(self.plugin_dir, 'icons', 'outbox.svg'),
-            text=self.tr(u'Load sketches from file'),
+            text=self.tr('Load sketches from file'),
             callback=self.loadAction,
             parent=self.iface.mainWindow(),
             object_name='mLoadSketchesFromFile')
@@ -313,7 +309,7 @@ class redLayer(QgsMapTool):
         self.removeSketchesAction()
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&Red Layer'),
+                self.tr('&Red Layer'),
                 action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar
@@ -526,7 +522,7 @@ class redLayer(QgsMapTool):
             QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
         except Exception  as err:
             logging.error(err)
-        
+
     def newProjectCreatedAction(self):
         # remove current sketches
         try:
@@ -655,7 +651,7 @@ class redLayer(QgsMapTool):
         polyGestures = {}
         lastPoint = None
         gestureId = 0
-        #cycle to classify elementary sketches in gestures
+        # cycle to classify elementary sketches in gestures
         for sketch in self.geoSketches:
             if sketch[2].asGeometry():
                 if not lastPoint or sketch[2].asGeometry().vertexAt(0) == lastPoint:
