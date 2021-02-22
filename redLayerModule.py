@@ -82,11 +82,8 @@ class redLayer(QgsMapTool):
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
-
         # Create the dialog (after translation) and keep reference
-        #self.dlg = redLayerDialog()
+        # self.dlg = redLayerDialog()
 
         # Declare instance attributes
         self.actions = []
@@ -110,7 +107,6 @@ class redLayer(QgsMapTool):
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('redLayer', message)
-
 
     def add_action(
         self,
@@ -249,13 +245,13 @@ class redLayer(QgsMapTool):
             parent=self.iface.mainWindow(),
             object_name='mLoadSketchesFromFile')
         self.canvasButton.setMenu(self.canvasMenu())
-        self.noteButton.setCheckable (True)
-        self.penButton.setCheckable (True)
-        self.sketchButton.setCheckable (True)
-        self.eraseButton.setCheckable (True)
+        self.noteButton.setCheckable(True)
+        self.penButton.setCheckable(True)
+        self.sketchButton.setCheckable(True)
+        self.eraseButton.setCheckable(True)
         self.geoSketches = []
         self.dumLayer = QgsVectorLayer("Point?crs=EPSG:4326", "temporary_points", "memory")
-        self.pressed=None
+        self.pressed = None
         self.previousPoint = None
         self.previousMoved = None
         self.gestures = 0
@@ -275,13 +271,13 @@ class redLayer(QgsMapTool):
         self.colorPaletteAction = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "colorPalette.png")), self.tr("color palette"))
         self.colorPaletteAction.setObjectName('mColorPalette')
         self.colorPaletteAction.triggered.connect(self.colorPaletteFunc)
-        self.width2Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width2.png")),"2  pixels")
+        self.width2Action = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "width2.png")), "2 pixels")
         self.width2Action.setObjectName('mWidth2size')
         self.width2Action.triggered.connect(self.width2Func)
-        self.width4Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width4.png")),"4  pixels")
+        self.width4Action = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "width4.png")), "4 pixels")
         self.width4Action.setObjectName('mWidth4size')
         self.width4Action.triggered.connect(self.width4Func)
-        self.width8Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width8.png")),"8  pixels")
+        self.width8Action = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "width8.png")), "8 pixels")
         self.width8Action.setObjectName('mWidth8size')
         self.width8Action.triggered.connect(self.width8Func)
         self.width16Action = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "width16.png")), "16 pixels")
@@ -289,9 +285,7 @@ class redLayer(QgsMapTool):
         self.width16Action.triggered.connect(self.width16Func)
         return contextMenu
 
-
-
-    def sketchEnabled(self,enabled):
+    def sketchEnabled(self, enabled):
         self.enabled = enabled
         if enabled:
             self.sketchButton.setEnabled(True)
@@ -324,17 +318,16 @@ class redLayer(QgsMapTool):
             self.iface.removeToolBarIcon(action)
         del self.toolbar
 
-
     def sketchAction(self):
         """Run method that performs all the real work"""
-        gsvMessage="Click on map to draw geo sketches"
+        gsvMessage = "Click on map to draw geo sketches"
         self.iface.mainWindow().statusBar().showMessage(gsvMessage)
         self.dumLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         self.canvas.setMapTool(self)
         self.canvasAction = "sketch"
 
     def penAction(self):
-        gsvMessage="Click on map and drag to draw a line"
+        gsvMessage = "Click on map and drag to draw a line"
         self.iface.mainWindow().statusBar().showMessage(gsvMessage)
         self.dumLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         self.canvas.setMapTool(self)
@@ -342,10 +335,10 @@ class redLayer(QgsMapTool):
 
     def canvasAction(self):
         pass
-        
+
     def colorPaletteFunc(self):
-        self.currentColor = QgsColorDialog.getColor(self.currentColor,None)
-        
+        self.currentColor = QgsColorDialog.getColor(self.currentColor, None)
+
     def width2Func(self):
         self.currentWidth = 2
 
@@ -359,7 +352,7 @@ class redLayer(QgsMapTool):
         self.currentWidth = 16
 
     def eraseAction(self):
-        gsvMessage="Click on map to erase geo sketches"
+        gsvMessage = "Click on map to erase geo sketches"
         self.iface.mainWindow().statusBar().showMessage(gsvMessage)
         self.dumLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         self.canvas.setMapTool(self)
@@ -379,10 +372,10 @@ class redLayer(QgsMapTool):
             sketch[2].reset()
             if sketch[3]:
                 try:
-                    self.iface.mapCanvas().scene().removeItem( sketch[3] )
+                    self.iface.mapCanvas().scene().removeItem(sketch[3])
                     del(sketch[3])
-                except Exception as e:
-                    pass
+                except Exception as err:
+                    logging.error(err)
         self.removeAllAnnotations()
         self.geoSketches = []
         self.gestures = 0
@@ -414,7 +407,7 @@ class redLayer(QgsMapTool):
                 midIdx = -int(self.points/2)
                 if midIdx == 0:
                     midIdx = -1
-                annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry())
+                annotation = sketchNoteDialog.newPoint(self.iface, self.geoSketches[midIdx][2].asGeometry())
                 if annotation:
                     self.geoSketches[-1][3] = annotation
                     self.geoSketches[-1][4] = annotation.document().toPlainText()
@@ -428,7 +421,7 @@ class redLayer(QgsMapTool):
             self.pressed = None
             self.dragged = None
         else:
-            self.pressed=True
+            self.pressed = True
             self.dragged = None
             self.movedPoint = None
             self.px = event.pos().x()
@@ -441,7 +434,7 @@ class redLayer(QgsMapTool):
                 snappedPoint = self.snapSys.snapToMap(self.pressedPoint)
                 if snappedPoint.isValid():
                     self.pressedPoint = snappedPoint.point()
-                self.sketch=QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry  )
+                self.sketch = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.LineGeometry)
                 self.sketch.setWidth(self.currentWidth)
                 self.sketch.setColor(self.currentColor)
                 self.sketch.addPoint(self.pressedPoint)
@@ -453,16 +446,17 @@ class redLayer(QgsMapTool):
             y = event.pos().y()
             self.movedPoint = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
             if self.canvasAction == "sketch":
-                if abs(x-self.px)>3 or abs(y-self.py)>3:
-                    sketch=QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry )
+                if abs(x-self.px) > 3 or abs(y-self.py) > 3:
+                    sketch = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.LineGeometry)
                     sketch.setWidth(self.currentWidth)
                     sketch.setColor(self.currentColor)
                     sketch.addPoint(self.pressedPoint)
                     sketch.addPoint(self.movedPoint)
                     self.pressedPoint = self.movedPoint
                     self.points += 1
-                    self.geoSketches.append([self.currentColor.name(),str(self.currentWidth),sketch,None,"",self.gestures])
-                    self.px = x; self.py = y
+                    self.geoSketches.append([self.currentColor.name(), str(self.currentWidth), sketch, None, "", self.gestures])
+                    self.px = x
+                    self.py = y
             if self.canvasAction == "pen":
                 if not QgsGeometry.fromPointXY(self.movedPoint).equals(QgsGeometry.fromPointXY(self.pressedPoint)):
                     self.dragged = True
@@ -479,23 +473,22 @@ class redLayer(QgsMapTool):
                     self.iface.mainWindow().statusBar().showMessage("Sketch lenght: %s" % math.sqrt(self.pressedPoint.sqrDist(self.movedPoint)))
                 else:
                     self.dragged = None
-                    
+
             if self.canvasAction == "erase":
-                cursor = QgsRectangle (self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
+                cursor = QgsRectangle(self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
                 for sketch in self.geoSketches:
                     if sketch[2].asGeometry() and sketch[2].asGeometry().boundingBox().intersects(cursor):
                         sketch[2].reset()
                         if sketch[3]:
                             try:
                                 self.iface.mapCanvas().scene().removeItem( sketch[3] )
-                            except:
-                                pass
-
+                            except Exception as err:
+                                logging.error(err)
 
     def canvasReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
             return
-        self.pressed=None
+        self.pressed = None
         QgsProject.instance().setDirty(True)
         if self.canvasAction == "pen":
             if not self.dragged:
@@ -511,17 +504,16 @@ class redLayer(QgsMapTool):
                 self.sketch.addPoint(self.previousPoint)
                 self.sketch.addPoint(self.movedPoint)
                 self.previousPoint = self.movedPoint
-                
             else:
                 self.previousPoint = self.movedPoint
                 self.previousMoved = True
-            self.geoSketches.append([self.currentColor.name(),str(self.currentWidth),self.sketch,None,"",self.gestures])
-            self.points += 1 
+            self.geoSketches.append([self.currentColor.name(), str(self.currentWidth), self.sketch, None, "", self.gestures])
+            self.points += 1
 
         if self.canvasAction == "sketch" and self.noteButton.isChecked():
             if self.points > 0:
                 midIdx = -int(self.points/2)
-                annotation = sketchNoteDialog.newPoint(self.iface,self.geoSketches[midIdx][2].asGeometry())
+                annotation = sketchNoteDialog.newPoint(self.iface, self.geoSketches[midIdx][2].asGeometry())
                 if annotation:
                     self.geoSketches[midIdx][3] = annotation
                     self.geoSketches[midIdx][4] = annotation.annotation().document().toPlainText()
@@ -532,69 +524,68 @@ class redLayer(QgsMapTool):
         self.sketchEnabled(True)
         try:
             QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
-        except:
-            pass
+        except Exception  as err:
+            logging.error(err)
         
     def newProjectCreatedAction(self):
-        #remove current sketches
+        # remove current sketches
         try:
             QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
-        except:
-            pass
+        except Exception as err:
+            logging.error(err)
         self.removeSketchesAction()
         self.sketchEnabled(None)
 
     def projectReadAction(self):
-        #remove current sketches
+        # remove current sketches
         try:
             QgsMapLayerRegistry.instance().layerLoaded.disconnect(self.notSavedProjectAction)
-        except:
-            pass
-            
+        except Exception as err:
+            logging.error(err)
+
         try:
             self.removeSketchesAction()
-            #connect to signal to save sketches along with project file
+            # connect to signal to save sketches along with project file
             QgsProject.instance().projectSaved.connect(self.afterSaveProjectAction)
             QgsProject.instance().writeProject.connect(self.beforeSaveProjectAction)
             self.projectFileInfo = QFileInfo(QgsProject.instance().fileName())
-            self.sketchFileInfo = QFileInfo(os.path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
-            #load project.sketch if file exists
+            self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(), self.projectFileInfo.baseName()+'.sketch'))
+            # load project.sketch if file exists
             self.loadSketches()
             self.sketchEnabled(True)
-        except Exception as e:
-            print ("Error connecting to project signals:", e)
+        except Exception as err:
+            logging.error("Error connecting to project signals: {}".format(err))
 
-    def beforeSaveProjectAction(self,domDoc):
-        #method to expunge redlayer annotation from annotation ready to to save
+    def beforeSaveProjectAction(self, domDoc):
+        # method to expunge redlayer annotation from annotation ready to to save
         if self.annotatatedSketch:
             annotationStrings = []
             for sketch in self.geoSketches:
                 if sketch[4] != "":
                     annotationStrings.append(sketch[4])
             nodes = domDoc.elementsByTagName("TextAnnotationItem")
-            for i in range(0,nodes.count()):
+            for i in range(0, nodes.count()):
                 node = nodes.at(i)
                 annotationDocumentNode = node.attributes().namedItem("document")
                 annotationDocument = QTextDocument()
                 annotationDocument.setHtml(annotationDocumentNode.nodeValue())
-                if annotationDocument.toPlainText() in annotationStrings: # erase only redlayer annotations
+                if annotationDocument.toPlainText() in annotationStrings:  # erase only redlayer annotations
                     parent = node.parentNode()
                     parent.removeChild(node)
-        
 
     def afterSaveProjectAction(self):
-        #method used for saving sketches file along with project file
+        # method used for saving sketches file along with project file
         self.projectFileInfo = QFileInfo(QgsProject.instance().fileName())
-        self.sketchFileInfo = QFileInfo(os.path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
+        self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
         self.saveSketches()
-        
+
     def saveSketches(self, userFile=None):
         if self.geoSketches != []:
             if userFile:
                 workDir = QgsProject.instance().readPath("./")
-                fileName = QFileDialog().getSaveFileName(None,"Save RedLayer sketches", workDir, "*.sketch")
+                fileName = QFileDialog().getSaveFileName(None, "Save RedLayer sketches", workDir, "*.sketch")
                 if QFileInfo(fileName[0]).suffix() != "sketch":
-                    suffixedFileName = fileName[0] + ".sketch" 
+                    suffixedFileName = fileName[0] + ".sketch"
                     if QFileInfo(suffixedFileName).exists():
                         reply = QMessageBox.question(None, 'confirm', "File %s exists. \nOverwrite?" % suffixedFileName, QMessageBox.Yes, QMessageBox.No)
                         if reply == QMessageBox.No:
@@ -607,7 +598,8 @@ class redLayer(QgsMapTool):
                 if sketch[2].asGeometry():
                     try:
                         note = sketch[3].annotation().document().toPlainText().replace("\n","%%N%%")
-                    except Exception as e:
+                    except Exception as err:
+                        logging.error(err)
                         note = ""
                     outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt()+"|"+note+"|"+str(sketch[5])+'\n')
             outfile.close()
@@ -618,19 +610,19 @@ class redLayer(QgsMapTool):
                     sketchFile.remove()
 
     def removeAllAnnotations(self):
-        #erase all annotation to prevent saving them along with project file
+        # erase all annotation to prevent saving them along with project file
         annotationsList = self.iface.mapCanvas().annotationItems()
         for item in annotationsList:
             try:
                 self.iface.mapCanvas().scene().removeItem(item)
                 del item
-            except:
-                pass
+            except Exception as err:
+                logging.error(err)
 
     def recoverAllAnnotations(self):
         for sketch in self.geoSketches:
             if sketch[4] != "":
-                sketch[3] = sketchNoteDialog.newPoint(self.iface,sketch[2].asGeometry(),txt = sketch[4])
+                sketch[3] = sketchNoteDialog.newPoint(self.iface, sketch[2].asGeometry(), txt=sketch[4])
                 self.annotatatedSketch = True
 
     def loadSketches(self, userFile=None):
@@ -638,21 +630,21 @@ class redLayer(QgsMapTool):
         self.annotatatedSketch = None
         if userFile:
             workDir = QgsProject.instance().readPath("./")
-            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(None,"Open RedLayer sketches file", workDir, "*.sketch")[0]);
+            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(None, "Open RedLayer sketches file", workDir, "*.sketch")[0]);
         else:
             fileNameInfo = self.sketchFileInfo
         if fileNameInfo.exists():
             infile = open(fileNameInfo.filePath(), 'r')
             canvas = self.iface.mapCanvas()
-            srs=canvas.mapSettings().destinationCrs()
+            srs = canvas.mapSettings().destinationCrs()
             dumLayer = QgsVectorLayer("Line?crs="+str(srs.authid()), "temporary_lines", "memory")
             self.geoSketches = []
             for line in infile:
                 inline = line.split("|")
-                sketch=QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry )
+                sketch=  QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry )
                 sketch.setWidth( int(inline[1]) )
                 sketch.setColor(QColor(inline[0]))
-                sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]),dumLayer)
+                sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]), dumLayer)
                 annotationText = inline[3].replace("%%N%%","\n") if inline[3] else ""
                 self.geoSketches.append([inline[0],inline[1],sketch,None,annotationText,int(inline[4])])
             self.gestures = int(inline[4])+1
@@ -669,35 +661,35 @@ class redLayer(QgsMapTool):
                 if not lastPoint or sketch[2].asGeometry().vertexAt(0) == lastPoint:
                     try:
                         polyGestures[gestureId].append(sketch[:-1])
-                    except:
+                    except Exception as err:
+                        logging.error(err)
                         polyGestures[gestureId] =[sketch[:-1]]
                     lastPoint = sketch[2].asGeometry().vertexAt(1)
                 else:
                     lastPoint = None
-                    gestureId +=1
+                    gestureId += 1
         sketchLayer = QgsVectorLayer("LineString", "Sketch Layer", "memory")
         sketchLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         sketchLayer.startEditing()
         sketchLayer.addAttribute(QgsField("note",QVariant.String))
         sketchLayer.addAttribute(QgsField("color",QVariant.String))
         sketchLayer.addAttribute(QgsField("width",QVariant.Double))
-        for gestureId,gestureLine in polyGestures.items():
-            geometryList = []
+        for gestureId, gestureLine in polyGestures.items():
             note = ""
             polygon = []
             for segment in gestureLine:
                 vertex = segment[2].asGeometry().vertexAt(0)
-                polygon.append(QgsPoint(vertex.x(),vertex.y()))
+                polygon.append(QgsPoint(vertex.x(), vertex.y()))
                 if segment[4] != "":
                     note = segment[4]
             polygon.append(segment[2].asGeometry().vertexAt(1))
             polyline = QgsGeometry.fromPolyline(polygon)
             newFeat = QgsFeature()
             newFeat.setGeometry(polyline)
-            newFeat.setAttributes([note,QColor(segment[0]).name(),float(segment[1])/3.5])
+            newFeat.setAttributes([note, QColor(segment[0]).name(), float(segment[1])/3.5])
             sketchLayer.addFeatures([newFeat])
         sketchLayer.commitChanges()
-        sketchLayer.loadNamedStyle(os.path.join(self.plugin_dir,"sketchLayerStyle.qml"))
+        sketchLayer.loadNamedStyle(path.join(self.plugin_dir, "sketchLayerStyle.qml"))
         QgsProject.instance().addMapLayer(sketchLayer)
         sketchLayer.selectByIds([])
         self.removeSketchesAction()
