@@ -51,6 +51,7 @@ from qgis.PyQt.QtCore import (
 )
 from qgis.PyQt.QtGui import QColor, QIcon, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu, QMessageBox
+from qgis.utils import iface
 
 # project package
 from .note_class_dialog import sketchNoteDialog
@@ -95,8 +96,33 @@ class redLayer(QgsMapTool):
         QgsMapTool.__init__(self, self.canvas)
 
     @staticmethod
-    def log(message, application="Red Layer", log_level=1):
-        QgsMessageLog.logMessage(str=message, tag=application, notifyUser=True)
+    def log(
+        message: str,
+        application: str = "Red Layer",
+        log_level: int = 0,
+        push: bool = False,
+    ):
+        """Send messages to QGIS messages windows and to the user as a message bar. \
+        Plugin name is used as title.
+
+        :param message: message to display
+        :type message: str
+        :param application: name of the application sending the message, defaults to "Red Layer"
+        :type application: str, optional
+        :param log_level: message level, defaults to 0 (info)
+        :type log_level: int, optional
+        :param push: also display the message in the QGIS message bar in addition to the log, defaults to False
+        :type push: bool, optional
+        """
+        # send it to QGIS messages panel
+        QgsMessageLog.logMessage(
+            message=message, tag=application, notifyUser=push, level=2
+        )
+
+        if push:
+            iface.messageBar().pushMessage(
+                title=application, text=message, level=log_level, duration=(log_level+1)*3
+            )
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -380,6 +406,7 @@ class redLayer(QgsMapTool):
                     self.iface.mapCanvas().scene().removeItem(sketch[3])
                     del(sketch[3])
                 except Exception as err:
+                    self.log(message=self.tr("Remove sketches failed."), log_level=1)
                     logging.error(err)
         self.removeAllAnnotations()
         self.geoSketches = []
