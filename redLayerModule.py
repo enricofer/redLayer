@@ -32,6 +32,7 @@ from qgis.core import (
     QgsFeature,
     QgsField,
     QgsGeometry,
+    QgsMessageLog,
     QgsPoint,
     QgsProject,
     QgsRectangle,
@@ -92,6 +93,10 @@ class redLayer(QgsMapTool):
         self.toolbar = self.iface.addToolBar(u'redLayer')
         self.toolbar.setObjectName(u'redLayer')
         QgsMapTool.__init__(self, self.canvas)
+
+    @staticmethod
+    def log(message, application="Red Layer", log_level=1):
+        QgsMessageLog.logMessage(str=message, tag=application, notifyUser=True)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
