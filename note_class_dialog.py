@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#! python3  # noqa: E265
+
 """
 /***************************************************************************
  idtVen - class idtVen_albero
@@ -21,21 +22,21 @@
  ***************************************************************************/
 """
 
-#from PyQt4 import QtCore, QtGui
-import time
+# standard library
+import logging
+import os
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5 import uic
+# PyQGIS
+from qgis.core import QgsPointXY, QgsTextAnnotation
+from qgis.gui import QgsMapCanvasAnnotationItem
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QTextDocument
+from qgis.PyQt.QtWidgets import QDialog
 
-from qgis.core import *
-from qgis.utils import *
-from qgis.gui import *
 # create the dialog for zoom to point
-
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_note_dialog.ui'))
+
 
 class sketchNoteDialog(QDialog, FORM_CLASS):
     def __init__(self, iface, parent=None):
