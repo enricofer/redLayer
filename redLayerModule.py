@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#! python3  # noqa: E265
+
 """
 /***************************************************************************
  redLayer
@@ -20,25 +21,38 @@
  *                                                                         *
  ***************************************************************************/
 """
-#from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-#from PyQt5.QtGui import QAction, QIcon
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKit import *
-from PyQt5 import uic
-# Initialize Qt resources from file resources.py
-#import resources_rc
-# Import the code for the dialog
 
-from qgis.core import *
-from qgis.utils import *
-from qgis.gui import *
-
-from .note_class_dialog import sketchNoteDialog
-import os.path
-import json
+# standard library
+import logging
 import math
+import os.path
+
+# PyQGIS
+from qgis.core import (
+    QgsFeature,
+    QgsField,
+    QgsGeometry,
+    QgsPoint,
+    QgsProject,
+    QgsRectangle,
+    QgsSettings,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
+from qgis.gui import QgsColorDialog, QgsMapTool, QgsRubberBand
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QFile,
+    QFileInfo,
+    Qt,
+    QTranslator,
+    QVariant,
+)
+from qgis.PyQt.QtGui import QColor, QIcon, QTextDocument
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu, QMessageBox
+
+# project package
+from .note_class_dialog import sketchNoteDialog
 
 
 class redLayer(QgsMapTool):
