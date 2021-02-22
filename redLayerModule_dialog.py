@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#! python3  # noqa: E265
+
 """
 /***************************************************************************
  redLayerDialog
@@ -21,15 +22,18 @@
  ***************************************************************************/
 """
 
+# standard library
 import os
 
-from PyQt5 import QtGui, QtWidgets, uic
+# PyQGIS
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import QDialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'redLayerModule_dialog_base.ui'))
 
 
-class redLayerDialog(QtGui.QDialog, FORM_CLASS):
+class redLayerDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(redLayerDialog, self).__init__(parent)
