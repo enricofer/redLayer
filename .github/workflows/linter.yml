@@ -1,7 +1,7 @@
 name: Linter 🐍
 
 env:
-  PROJECT_FOLDER: "menu_from_project"
+  PROJECT_FOLDER: "."
   PYTHON_VERSION: 3.7
 
 on:
