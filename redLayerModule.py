@@ -25,7 +25,7 @@
 # standard library
 import logging
 import math
-import os.path
+from os import path
 
 # PyQGIS
 from qgis.core import (
@@ -70,15 +70,15 @@ class redLayer(QgsMapTool):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
+        self.plugin_dir = path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
+        locale = QgsSettings().value('locale/userLocale')[0:2]
+        locale_path = path.join(
             self.plugin_dir,
             'i18n',
             'redLayer_{}.qm'.format(locale))
 
-        if os.path.exists(locale_path):
+        if path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
@@ -196,54 +196,54 @@ class redLayer(QgsMapTool):
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         self.sketchButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','sketch.svg'),
+            path.join(self.plugin_dir, 'icons', 'sketch.svg'),
             text=self.tr(u'Sketch on map'),
             callback=self.sketchAction,
             parent=self.iface.mainWindow(),
             object_name='mSketchAction')
         self.penButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','pen.svg'),
+            path.join(self.plugin_dir, 'icons', 'pen.svg'),
             text=self.tr(u'Draw line on map'),
             callback=self.penAction,
             parent=self.iface.mainWindow(),
             object_name='mPenAction')
         self.canvasButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','canvas.svg'),
+            path.join(self.plugin_dir, 'icons', 'canvas.svg'),
             text=self.tr(u'Color and width canvas'),
             callback=None,
             parent=self.iface.mainWindow())
         self.eraseButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','erase.svg'),
+            path.join(self.plugin_dir, 'icons', 'erase.svg'),
             text=self.tr(u'Erase sketches'),
             callback=self.eraseAction,
             parent=self.iface.mainWindow(),
             object_name='mEraseAction')
         self.removeButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','remove.svg'),
+            path.join(self.plugin_dir, 'icons', 'remove.svg'),
             text=self.tr(u'Remove all sketches'),
             callback=self.removeSketchesAction,
             parent=self.iface.mainWindow(),
             object_name='mRemoveAllSketches')
         self.noteButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','note.svg'),
+            path.join(self.plugin_dir, 'icons', 'note.svg'),
             text=self.tr(u'Add text annotations to sketches'),
             callback=None,
             parent=self.iface.mainWindow(),
             object_name='mAddTextAnnotations')
         self.convertButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','toLayer.svg'),
+            path.join(self.plugin_dir, 'icons', 'toLayer.svg'),
             text=self.tr(u'Convert annotations to Memory Layer'),
             callback=self.toMemoryLayerAction,
             parent=self.iface.mainWindow(),
             object_name='mConvertAnnotationsToMemoryLayer')
         self.saveButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','inbox.svg'),
+            path.join(self.plugin_dir, 'icons', 'inbox.svg'),
             text=self.tr(u'Save sketches to file'),
             callback=self.saveAction,
             parent=self.iface.mainWindow(),
             object_name='mSaveSketchesToFile')
         self.loadButton = self.add_action(
-            os.path.join(self.plugin_dir,'icons','outbox.svg'),
+            path.join(self.plugin_dir, 'icons', 'outbox.svg'),
             text=self.tr(u'Load sketches from file'),
             callback=self.loadAction,
             parent=self.iface.mainWindow(),
@@ -272,7 +272,7 @@ class redLayer(QgsMapTool):
     def canvasMenu(self):
         contextMenu = QMenu()
         contextMenu.setObjectName('mColorAndWidth')
-        self.colorPaletteAction = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","colorPalette.png")),self.tr("color palette"))
+        self.colorPaletteAction = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "colorPalette.png")), self.tr("color palette"))
         self.colorPaletteAction.setObjectName('mColorPalette')
         self.colorPaletteAction.triggered.connect(self.colorPaletteFunc)
         self.width2Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width2.png")),"2  pixels")
@@ -284,7 +284,7 @@ class redLayer(QgsMapTool):
         self.width8Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width8.png")),"8  pixels")
         self.width8Action.setObjectName('mWidth8size')
         self.width8Action.triggered.connect(self.width8Func)
-        self.width16Action = contextMenu.addAction(QIcon(os.path.join(self.plugin_dir,"icons","width16.png")),"16 pixels")
+        self.width16Action = contextMenu.addAction(QIcon(path.join(self.plugin_dir, "icons", "width16.png")), "16 pixels")
         self.width16Action.setObjectName('mWidth16size')
         self.width16Action.triggered.connect(self.width16Func)
         return contextMenu
