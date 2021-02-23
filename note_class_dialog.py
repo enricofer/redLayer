@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#! python3  # noqa: E265
+
 """
 /***************************************************************************
  idtVen - class idtVen_albero
@@ -21,21 +22,21 @@
  ***************************************************************************/
 """
 
-#from PyQt4 import QtCore, QtGui
-import time
+# standard library
+import logging
+import os
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5 import uic
+# PyQGIS
+from qgis.core import QgsPointXY, QgsTextAnnotation
+from qgis.gui import QgsMapCanvasAnnotationItem
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QTextDocument
+from qgis.PyQt.QtWidgets import QDialog
 
-from qgis.core import *
-from qgis.utils import *
-from qgis.gui import *
 # create the dialog for zoom to point
-
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_note_dialog.ui'))
+
 
 class sketchNoteDialog(QDialog, FORM_CLASS):
     def __init__(self, iface, parent=None):
@@ -47,7 +48,7 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
         self.note = None
         self.iface = iface
 
-    def setPoint(self,segment):
+    def setPoint(self, segment):
         self.point = self.midPoint(segment)
 
     def getNote(self):
@@ -56,22 +57,21 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
     def getAnnotation(self):
         try:
             return self.textItem
-        except:
+        except Exception as err:
+            logging.error(err)
             return None
 
     def cancel(self):
         self.note = ""
-        #self.hide()
-        pass
 
     def mkNote(self):
         self.textItem = self.mkAnnotation(self.noteText.toPlainText())
         self.note = self.noteText.toPlainText()
         self.noteText.clear()
 
-    def mkAnnotation(self,doc):
+    def mkAnnotation(self, doc):
         if self.point:
-            TD =QTextDocument(doc)
+            TD = QTextDocument(doc)
             item = QgsTextAnnotation()
             item.setMapPosition(self.point)
             item.setFrameSize(TD.size())
@@ -81,13 +81,13 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
         else:
             return
 
-    def midPoint(self,s):
-       x = (s.vertexAt(0).x() + s.vertexAt(1).x())/2
-       y = (s.vertexAt(0).y() + s.vertexAt(1).y())/2
-       return QgsPointXY(x,y)
+    def midPoint(self, s):
+        x = (s.vertexAt(0).x() + s.vertexAt(1).x())/2
+        y = (s.vertexAt(0).y() + s.vertexAt(1).y())/2
+        return QgsPointXY(x, y)
 
     @staticmethod
-    def newPoint(iface,segment,txt = None):
+    def newPoint(iface, segment, txt=None):
         dialog = sketchNoteDialog(iface)
 
         dialog.setPoint(segment)
@@ -100,4 +100,3 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
                 return None
         else:
             return dialog.mkAnnotation(txt)
-            
