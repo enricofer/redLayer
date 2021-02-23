@@ -118,16 +118,28 @@ class redLayer(QgsMapTool):
         :type message: str
         :param application: name of the application sending the message, defaults to "Red Layer"
         :type application: str, optional
-        :param log_level: message level, defaults to 0 (info)
+        :param log_level: message level. Possible values: 0 (info), 1 (warning), \
+            2 (critical), 3 (success), 4 (none - grey). Defaults to 0 (info)
         :type log_level: int, optional
         :param push: also display the message in the QGIS message bar in addition to the log, defaults to False
         :type push: bool, optional
+
+        :Example:
+
+        . code-block:: python
+
+                self.log(message="Plugin loaded - INFO", log_level=0, push=1)
+                self.log(message="Plugin loaded - WARNING", log_level=1, push=1)
+                self.log(message="Plugin loaded - ERROR", log_level=2, push=1)
+                self.log(message="Plugin loaded - SUCCESS", log_level=3, push=1)
+                self.log(message="Plugin loaded - TEST", log_level=4, push=1)
         """
         # send it to QGIS messages panel
         QgsMessageLog.logMessage(
-            message=message, tag=application, notifyUser=push, level=2
+            message=message, tag=application, notifyUser=push, level=log_level
         )
 
+        # optionally, display message on QGIS Message bar (above the map canvas)
         if push:
             iface.messageBar().pushMessage(
                 title=application, text=message, level=log_level, duration=(log_level+1)*3
