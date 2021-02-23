@@ -50,7 +50,7 @@ from qgis.PyQt.QtCore import (
     QVariant,
 )
 from qgis.PyQt.QtGui import QColor, QIcon, QTextDocument
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu
 from qgis.utils import iface
 
 # project package
