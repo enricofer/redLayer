@@ -91,7 +91,7 @@ class redLayer(QgsMapTool):
             'i18n',
             'redLayer_{}.qm'.format(locale)
         )
-            
+
         if path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -517,7 +517,7 @@ class redLayer(QgsMapTool):
                     self.dragged = None
 
             if self.canvasAction == "erase":
-                cursor = QgsRectangle(self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
+                cursor = QgsRectangle(self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7), self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
                 for sketch in self.geoSketches:
                     if sketch[2].asGeometry() and sketch[2].asGeometry().boundingBox().intersects(cursor):
                         sketch[2].reset()
@@ -623,7 +623,7 @@ class redLayer(QgsMapTool):
     def afterSaveProjectAction(self):
         # method used for saving sketches file along with project file
         self.projectFileInfo = QFileInfo(QgsProject.instance().fileName())
-        self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
+        self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(), self.projectFileInfo.baseName() +'.sketch'))
         self.saveSketches()
 
     def saveSketches(self, userFile=None):
@@ -657,7 +657,6 @@ class redLayer(QgsMapTool):
                 else:
                     self.log(message=self.tr("No file selected"), log_level=0)
                     return
-                outfile = open(suffixedFileName, 'w')
             else:
                 out_sketch_path = self.sketchFileInfo.absoluteFilePath()
 
