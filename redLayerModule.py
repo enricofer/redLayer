@@ -551,14 +551,14 @@ class redLayer(QgsMapTool):
     def notSavedProjectAction(self):
         self.sketchEnabled(True)
         try:
-            QgsMapLayerRegistry.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
+            QgsProject.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
         except Exception  as err:
             logging.error(err)
 
     def newProjectCreatedAction(self):
         # remove current sketches
         try:
-            QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.notSavedProjectAction)
+            QgsProject.instance().legendLayersAdded.connect(self.notSavedProjectAction)
         except Exception as err:
             logging.error(err)
         self.removeSketchesAction()
@@ -567,7 +567,7 @@ class redLayer(QgsMapTool):
     def projectReadAction(self):
         # remove current sketches
         try:
-            QgsMapLayerRegistry.instance().layerLoaded.disconnect(self.notSavedProjectAction)
+            QgsProject.instance().layerLoaded.disconnect(self.notSavedProjectAction)
         except Exception as err:
             logging.error(err)
 
