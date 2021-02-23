@@ -88,11 +88,13 @@ class redLayer(QgsMapTool):
         locale_path = path.join(
             self.plugin_dir,
             'i18n',
-            'redLayer_{}.qm'.format(locale))
-
+            'redLayer_{}.qm'.format(locale)
+        )
+            
         if path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
+            QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
         self.actions = []
@@ -156,7 +158,8 @@ class redLayer(QgsMapTool):
         status_tip=None,
         whats_this=None,
         parent=None,
-        object_name=None):
+        object_name=None
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
