@@ -56,6 +56,16 @@ from qgis.utils import iface
 # project package
 from .note_class_dialog import sketchNoteDialog
 
+# ############################################################################
+# ########## Globals ###############
+# ##################################
+
+logger = logging.getLogger(__name__)
+
+
+# ############################################################################
+# ########## Classes ###############
+# ##################################
 
 class redLayer(QgsMapTool):
     """QGIS Plugin Implementation."""
@@ -403,7 +413,7 @@ class redLayer(QgsMapTool):
                     del(sketch[3])
                 except Exception as err:
                     self.log(message=self.tr("Remove sketches failed."), log_level=1)
-                    logging.error(err)
+                    logger.error(err)
         self.removeAllAnnotations()
         self.geoSketches = []
         self.gestures = 0
@@ -509,9 +519,10 @@ class redLayer(QgsMapTool):
                         sketch[2].reset()
                         if sketch[3]:
                             try:
-                                self.iface.mapCanvas().scene().removeItem( sketch[3] )
+                                self.iface.mapCanvas().scene().removeItem(sketch[3])
                             except Exception as err:
-                                logging.error(err)
+                                self.log(message=self.tr("Erase sketch failed."), log_level=1)
+                                logger.error(err)
 
     def canvasReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -552,15 +563,17 @@ class redLayer(QgsMapTool):
         self.sketchEnabled(True)
         try:
             QgsProject.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
-        except Exception  as err:
-            logging.error(err)
+        except Exception as err:
+            self.log(message=self.tr("Remove unsaved action failed."), log_level=1)
+            logger.error(err)
 
     def newProjectCreatedAction(self):
         # remove current sketches
         try:
             QgsProject.instance().legendLayersAdded.connect(self.notSavedProjectAction)
         except Exception as err:
-            logging.error(err)
+            self.log(message=self.tr("Remove current sketches failed."), log_level=1)
+            logger.error(err)
         self.removeSketchesAction()
         self.sketchEnabled(None)
 
@@ -569,7 +582,8 @@ class redLayer(QgsMapTool):
         try:
             QgsProject.instance().layerLoaded.disconnect(self.notSavedProjectAction)
         except Exception as err:
-            logging.error(err)
+            self.log(message=self.tr("Remove current sketches failed."), log_level=1)
+            logger.error(err)
 
         try:
             self.removeSketchesAction()
@@ -582,7 +596,8 @@ class redLayer(QgsMapTool):
             self.loadSketches()
             self.sketchEnabled(True)
         except Exception as err:
-            logging.error("Error connecting to project signals: {}".format(err))
+            self.log(message=self.tr("Error connecting to project signals."), log_level=1)
+            logger.error("Error connecting to project signals: {}".format(err))
 
     def beforeSaveProjectAction(self, domDoc):
         # method to expunge redlayer annotation from annotation ready to to save
@@ -625,11 +640,12 @@ class redLayer(QgsMapTool):
             for sketch in self.geoSketches:
                 if sketch[2].asGeometry():
                     try:
-                        note = sketch[3].annotation().document().toPlainText().replace("\n","%%N%%")
+                        note = sketch[3].annotation().document().toPlainText().replace("\n", "%%N%%")
                     except Exception as err:
-                        logging.error(err)
+                        self.log(message=self.tr("Error connecting to project signals."), log_level=1)
+                        logger.error(err)
                         note = ""
-                    outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt()+"|"+note+"|"+str(sketch[5])+'\n')
+                    outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt() + "|" + note + "|"+str(sketch[5])+'\n')
             outfile.close()
         else:
             if self.sketchFileInfo.exists():
@@ -645,7 +661,8 @@ class redLayer(QgsMapTool):
                 self.iface.mapCanvas().scene().removeItem(item)
                 del item
             except Exception as err:
-                logging.error(err)
+                self.log(message=self.tr("Remove all annotations failed."), log_level=1)
+                logger.error(err)
 
     def recoverAllAnnotations(self):
         for sketch in self.geoSketches:
@@ -669,12 +686,12 @@ class redLayer(QgsMapTool):
             self.geoSketches = []
             for line in infile:
                 inline = line.split("|")
-                sketch=  QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry )
-                sketch.setWidth( int(inline[1]) )
+                sketch = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.LineGeometry)
+                sketch.setWidth(int(inline[1]))
                 sketch.setColor(QColor(inline[0]))
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]), dumLayer)
-                annotationText = inline[3].replace("%%N%%","\n") if inline[3] else ""
-                self.geoSketches.append([inline[0],inline[1],sketch,None,annotationText,int(inline[4])])
+                annotationText = inline[3].replace("%%N%%", "\n") if inline[3] else ""
+                self.geoSketches.append([inline[0], inline[1], sketch, None, annotationText, int(inline[4])])
             self.gestures = int(inline[4])+1
             infile.close()
             self.recoverAllAnnotations()
@@ -690,8 +707,9 @@ class redLayer(QgsMapTool):
                     try:
                         polyGestures[gestureId].append(sketch[:-1])
                     except Exception as err:
-                        logging.error(err)
-                        polyGestures[gestureId] =[sketch[:-1]]
+                        self.log(message=self.tr("Adding sketch to memory layer failed."), log_level=1)
+                        logger.error(err)
+                        polyGestures[gestureId] = [sketch[:-1]]
                     lastPoint = sketch[2].asGeometry().vertexAt(1)
                 else:
                     lastPoint = None
@@ -699,9 +717,9 @@ class redLayer(QgsMapTool):
         sketchLayer = QgsVectorLayer("LineString", "Sketch Layer", "memory")
         sketchLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         sketchLayer.startEditing()
-        sketchLayer.addAttribute(QgsField("note",QVariant.String))
-        sketchLayer.addAttribute(QgsField("color",QVariant.String))
-        sketchLayer.addAttribute(QgsField("width",QVariant.Double))
+        sketchLayer.addAttribute(QgsField("note", QVariant.String))
+        sketchLayer.addAttribute(QgsField("color", QVariant.String))
+        sketchLayer.addAttribute(QgsField("width", QVariant.Double))
         for gestureId, gestureLine in polyGestures.items():
             note = ""
             polygon = []
