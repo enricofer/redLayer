@@ -675,7 +675,12 @@ class redLayer(QgsMapTool):
         self.annotatatedSketch = None
         if userFile:
             workDir = QgsProject.instance().readPath("./")
-            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(None, "Open RedLayer sketches file", workDir, "*.sketch")[0]);
+            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(
+                None,
+                "Open RedLayer sketches file",
+                workDir,
+                "*.sketch")[0]
+            )
         else:
             fileNameInfo = self.sketchFileInfo
         if fileNameInfo.exists():
