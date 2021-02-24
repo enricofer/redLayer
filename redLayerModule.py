@@ -25,6 +25,7 @@
 # standard library
 import logging
 import math
+from pathlib import Path
 from os import path
 
 # PyQGIS
@@ -50,7 +51,7 @@ from qgis.PyQt.QtCore import (
     QVariant,
 )
 from qgis.PyQt.QtGui import QColor, QIcon, QTextDocument
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu
 from qgis.utils import iface
 
 # project package
@@ -90,7 +91,7 @@ class redLayer(QgsMapTool):
             'i18n',
             'redLayer_{}.qm'.format(locale)
         )
-            
+
         if path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -528,7 +529,7 @@ class redLayer(QgsMapTool):
                     self.dragged = None
 
             if self.canvasAction == "erase":
-                cursor = QgsRectangle(self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7),self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
+                cursor = QgsRectangle(self.canvas.getCoordinateTransform().toMapCoordinates(x-7,y-7), self.canvas.getCoordinateTransform().toMapCoordinates(x+7,y+7))
                 for sketch in self.geoSketches:
                     if sketch[2].asGeometry() and sketch[2].asGeometry().boundingBox().intersects(cursor):
                         sketch[2].reset()
@@ -634,34 +635,54 @@ class redLayer(QgsMapTool):
     def afterSaveProjectAction(self):
         # method used for saving sketches file along with project file
         self.projectFileInfo = QFileInfo(QgsProject.instance().fileName())
-        self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(),self.projectFileInfo.baseName()+'.sketch'))
+        self.sketchFileInfo = QFileInfo(path.join(self.projectFileInfo.path(), self.projectFileInfo.baseName() +'.sketch'))
         self.saveSketches()
 
     def saveSketches(self, userFile=None):
         if self.geoSketches != []:
             if userFile:
                 workDir = QgsProject.instance().readPath("./")
-                fileName = QFileDialog().getSaveFileName(None, "Save RedLayer sketches", workDir, "*.sketch")
-                if QFileInfo(fileName[0]).suffix() != "sketch":
-                    suffixedFileName = fileName[0] + ".sketch"
-                    if QFileInfo(suffixedFileName).exists():
-                        reply = QMessageBox.question(None, 'confirm', "File %s exists. \nOverwrite?" % suffixedFileName, QMessageBox.Yes, QMessageBox.No)
-                        if reply == QMessageBox.No:
-                            suffixedFileName = None
-                            return
-                outfile = open(suffixedFileName, 'w')
+
+                # use Qt custom FileDialog to be more consistent with QGIS ui
+                options = QFileDialog.Options()
+                options |= QFileDialog.DontUseNativeDialog
+
+                # assk user where he wants to save his annotations
+                sketch_filepath, sketch_suffix_filter = QFileDialog().getSaveFileName(
+                    parent=None,
+                    caption=self.tr("Save RedLayer sketches"),
+                    directory=workDir,
+                    filter="All Files (*);;Annotations (*.sketch)",
+                    initialFilter="Annotations (*.sketch)",
+                    options=options,
+                )
+
+                # check user has entered something
+                if sketch_filepath:
+                    out_sketch_path = Path(sketch_filepath)
+                    if out_sketch_path.suffix != ".sketch":
+                        out_sketch_path = Path(str(out_sketch_path) + ".sketch")
+                    self.log(
+                        message=self.tr("Saving sketches to {}".format(out_sketch_path.resolve())),
+                        log_level=2
+                    )
+                else:
+                    self.log(message=self.tr("No file selected"), log_level=0)
+                    return
             else:
-                outfile = open(self.sketchFileInfo.absoluteFilePath(), 'w')
-            for sketch in self.geoSketches:
-                if sketch[2].asGeometry():
-                    try:
-                        note = sketch[3].annotation().document().toPlainText().replace("\n", "%%N%%")
-                    except Exception as err:
-                        self.log(message=self.tr("Error connecting to project signals."), log_level=1)
-                        logger.error(err)
-                        note = ""
-                    outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt() + "|" + note + "|"+str(sketch[5])+'\n')
-            outfile.close()
+                out_sketch_path = self.sketchFileInfo.absoluteFilePath()
+
+            # write annotations into the file in a context manager
+            with out_sketch_path.open(mode="w", encoding="UTF8") as f:
+                for sketch in self.geoSketches:
+                    if sketch[2].asGeometry():
+                        try:
+                            note = sketch[3].annotation().document().toPlainText().replace("\n", "%%N%%")
+                        except Exception as err:
+                            self.log(message=self.tr("Error connecting to project signals."), log_level=1)
+                            logger.error(err)
+                            note = ""
+                        f.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt() + "|" + note + "|"+str(sketch[5])+'\n')
         else:
             if self.sketchFileInfo.exists():
                 sketchFile = QFile(self.sketchFileInfo.absoluteFilePath())
