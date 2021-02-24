@@ -37,6 +37,16 @@ from qgis.PyQt.QtWidgets import QDialog
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_note_dialog.ui'))
 
+# ############################################################################
+# ########## Globals ###############
+# ##################################
+
+logger = logging.getLogger(__name__)
+
+
+# ############################################################################
+# ########## Classes ###############
+# ##################################
 
 class sketchNoteDialog(QDialog, FORM_CLASS):
     def __init__(self, iface, parent=None):
@@ -58,7 +68,7 @@ class sketchNoteDialog(QDialog, FORM_CLASS):
         try:
             return self.textItem
         except Exception as err:
-            logging.error(err)
+            logger.error(err)
             return None
 
     def cancel(self):

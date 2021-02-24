@@ -32,6 +32,7 @@ from qgis.core import (
     QgsFeature,
     QgsField,
     QgsGeometry,
+    QgsMessageLog,
     QgsPoint,
     QgsProject,
     QgsRectangle,
@@ -50,10 +51,21 @@ from qgis.PyQt.QtCore import (
 )
 from qgis.PyQt.QtGui import QColor, QIcon, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMenu, QMessageBox
+from qgis.utils import iface
 
 # project package
 from .note_class_dialog import sketchNoteDialog
 
+# ############################################################################
+# ########## Globals ###############
+# ##################################
+
+logger = logging.getLogger(__name__)
+
+
+# ############################################################################
+# ########## Classes ###############
+# ##################################
 
 class redLayer(QgsMapTool):
     """QGIS Plugin Implementation."""
@@ -76,11 +88,13 @@ class redLayer(QgsMapTool):
         locale_path = path.join(
             self.plugin_dir,
             'i18n',
-            'redLayer_{}.qm'.format(locale))
-
+            'redLayer_{}.qm'.format(locale)
+        )
+            
         if path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
+            QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
         self.actions = []
@@ -88,6 +102,47 @@ class redLayer(QgsMapTool):
         self.toolbar = self.iface.addToolBar('redLayer')
         self.toolbar.setObjectName('redLayer')
         QgsMapTool.__init__(self, self.canvas)
+
+    @staticmethod
+    def log(
+        message: str,
+        application: str = "Red Layer",
+        log_level: int = 0,
+        push: bool = False,
+    ):
+        """Send messages to QGIS messages windows and to the user as a message bar. \
+        Plugin name is used as title.
+
+        :param message: message to display
+        :type message: str
+        :param application: name of the application sending the message, defaults to "Red Layer"
+        :type application: str, optional
+        :param log_level: message level. Possible values: 0 (info), 1 (warning), \
+            2 (critical), 3 (success), 4 (none - grey). Defaults to 0 (info)
+        :type log_level: int, optional
+        :param push: also display the message in the QGIS message bar in addition to the log, defaults to False
+        :type push: bool, optional
+
+        :Example:
+
+        . code-block:: python
+
+                self.log(message="Plugin loaded - INFO", log_level=0, push=1)
+                self.log(message="Plugin loaded - WARNING", log_level=1, push=1)
+                self.log(message="Plugin loaded - ERROR", log_level=2, push=1)
+                self.log(message="Plugin loaded - SUCCESS", log_level=3, push=1)
+                self.log(message="Plugin loaded - TEST", log_level=4, push=1)
+        """
+        # send it to QGIS messages panel
+        QgsMessageLog.logMessage(
+            message=message, tag=application, notifyUser=push, level=log_level
+        )
+
+        # optionally, display message on QGIS Message bar (above the map canvas)
+        if push:
+            iface.messageBar().pushMessage(
+                title=application, text=message, level=log_level, duration=(log_level+1)*3
+            )
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -115,7 +170,8 @@ class redLayer(QgsMapTool):
         status_tip=None,
         whats_this=None,
         parent=None,
-        object_name=None):
+        object_name=None
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -371,7 +427,8 @@ class redLayer(QgsMapTool):
                     self.iface.mapCanvas().scene().removeItem(sketch[3])
                     del(sketch[3])
                 except Exception as err:
-                    logging.error(err)
+                    self.log(message=self.tr("Remove sketches failed."), log_level=1)
+                    logger.error(err)
         self.removeAllAnnotations()
         self.geoSketches = []
         self.gestures = 0
@@ -477,9 +534,10 @@ class redLayer(QgsMapTool):
                         sketch[2].reset()
                         if sketch[3]:
                             try:
-                                self.iface.mapCanvas().scene().removeItem( sketch[3] )
+                                self.iface.mapCanvas().scene().removeItem(sketch[3])
                             except Exception as err:
-                                logging.error(err)
+                                self.log(message=self.tr("Erase sketch failed."), log_level=1)
+                                logger.error(err)
 
     def canvasReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -520,15 +578,17 @@ class redLayer(QgsMapTool):
         self.sketchEnabled(True)
         try:
             QgsProject.instance().legendLayersAdded.disconnect(self.notSavedProjectAction)
-        except Exception  as err:
-            logging.error(err)
+        except Exception as err:
+            self.log(message=self.tr("Remove unsaved action failed."), log_level=1)
+            logger.error(err)
 
     def newProjectCreatedAction(self):
         # remove current sketches
         try:
             QgsProject.instance().legendLayersAdded.connect(self.notSavedProjectAction)
         except Exception as err:
-            logging.error(err)
+            self.log(message=self.tr("Remove current sketches failed."), log_level=1)
+            logger.error(err)
         self.removeSketchesAction()
         self.sketchEnabled(None)
 
@@ -537,7 +597,8 @@ class redLayer(QgsMapTool):
         try:
             QgsProject.instance().layerLoaded.disconnect(self.notSavedProjectAction)
         except Exception as err:
-            logging.error(err)
+            self.log(message=self.tr("Remove current sketches failed."), log_level=1)
+            logger.error(err)
 
         try:
             self.removeSketchesAction()
@@ -550,7 +611,8 @@ class redLayer(QgsMapTool):
             self.loadSketches()
             self.sketchEnabled(True)
         except Exception as err:
-            logging.error("Error connecting to project signals: {}".format(err))
+            self.log(message=self.tr("Error connecting to project signals."), log_level=1)
+            logger.error("Error connecting to project signals: {}".format(err))
 
     def beforeSaveProjectAction(self, domDoc):
         # method to expunge redlayer annotation from annotation ready to to save
@@ -593,11 +655,12 @@ class redLayer(QgsMapTool):
             for sketch in self.geoSketches:
                 if sketch[2].asGeometry():
                     try:
-                        note = sketch[3].annotation().document().toPlainText().replace("\n","%%N%%")
+                        note = sketch[3].annotation().document().toPlainText().replace("\n", "%%N%%")
                     except Exception as err:
-                        logging.error(err)
+                        self.log(message=self.tr("Error connecting to project signals."), log_level=1)
+                        logger.error(err)
                         note = ""
-                    outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt()+"|"+note+"|"+str(sketch[5])+'\n')
+                    outfile.write(sketch[0]+'|'+sketch[1]+'|'+sketch[2].asGeometry().asWkt() + "|" + note + "|"+str(sketch[5])+'\n')
             outfile.close()
         else:
             if self.sketchFileInfo.exists():
@@ -613,7 +676,8 @@ class redLayer(QgsMapTool):
                 self.iface.mapCanvas().scene().removeItem(item)
                 del item
             except Exception as err:
-                logging.error(err)
+                self.log(message=self.tr("Remove all annotations failed."), log_level=1)
+                logger.error(err)
 
     def recoverAllAnnotations(self):
         for sketch in self.geoSketches:
@@ -626,7 +690,12 @@ class redLayer(QgsMapTool):
         self.annotatatedSketch = None
         if userFile:
             workDir = QgsProject.instance().readPath("./")
-            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(None, "Open RedLayer sketches file", workDir, "*.sketch")[0]);
+            fileNameInfo = QFileInfo(QFileDialog.getOpenFileName(
+                None,
+                "Open RedLayer sketches file",
+                workDir,
+                "*.sketch")[0]
+            )
         else:
             fileNameInfo = self.sketchFileInfo
         if fileNameInfo.exists():
@@ -637,12 +706,12 @@ class redLayer(QgsMapTool):
             self.geoSketches = []
             for line in infile:
                 inline = line.split("|")
-                sketch=  QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.LineGeometry )
-                sketch.setWidth( int(inline[1]) )
+                sketch = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.LineGeometry)
+                sketch.setWidth(int(inline[1]))
                 sketch.setColor(QColor(inline[0]))
                 sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]), dumLayer)
-                annotationText = inline[3].replace("%%N%%","\n") if inline[3] else ""
-                self.geoSketches.append([inline[0],inline[1],sketch,None,annotationText,int(inline[4])])
+                annotationText = inline[3].replace("%%N%%", "\n") if inline[3] else ""
+                self.geoSketches.append([inline[0], inline[1], sketch, None, annotationText, int(inline[4])])
             self.gestures = int(inline[4])+1
             infile.close()
             self.recoverAllAnnotations()
@@ -658,8 +727,9 @@ class redLayer(QgsMapTool):
                     try:
                         polyGestures[gestureId].append(sketch[:-1])
                     except Exception as err:
-                        logging.error(err)
-                        polyGestures[gestureId] =[sketch[:-1]]
+                        self.log(message=self.tr("Adding sketch to memory layer failed."), log_level=1)
+                        logger.error(err)
+                        polyGestures[gestureId] = [sketch[:-1]]
                     lastPoint = sketch[2].asGeometry().vertexAt(1)
                 else:
                     lastPoint = None
@@ -667,9 +737,9 @@ class redLayer(QgsMapTool):
         sketchLayer = QgsVectorLayer("LineString", "Sketch Layer", "memory")
         sketchLayer.setCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
         sketchLayer.startEditing()
-        sketchLayer.addAttribute(QgsField("note",QVariant.String))
-        sketchLayer.addAttribute(QgsField("color",QVariant.String))
-        sketchLayer.addAttribute(QgsField("width",QVariant.Double))
+        sketchLayer.addAttribute(QgsField("note", QVariant.String))
+        sketchLayer.addAttribute(QgsField("color", QVariant.String))
+        sketchLayer.addAttribute(QgsField("width", QVariant.Double))
         for gestureId, gestureLine in polyGestures.items():
             note = ""
             polygon = []
