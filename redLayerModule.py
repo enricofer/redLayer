@@ -675,7 +675,7 @@ class redLayer(QgsMapTool):
                 out_sketch_path = self.sketchFileInfo.absoluteFilePath()
 
             # write annotations into the file in a context manager
-            with out_sketch_path.open(mode="w", encoding="UTF8") as f:
+            with open(out_sketch_path, mode="w", encoding="UTF8") as f:
                 f.write("srs|"+QgsProject.instance().crs().toProj4()+'\n')
                 for sketch in self.geoSketches:
                     if sketch[2].asGeometry():
