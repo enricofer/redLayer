@@ -40,6 +40,8 @@ from qgis.core import (
     QgsSettings,
     QgsVectorLayer,
     QgsWkbTypes,
+    QgsCoordinateTransform,
+    QgsCoordinateReferenceSystem
 )
 from qgis.gui import QgsColorDialog, QgsMapTool, QgsRubberBand
 from qgis.PyQt.QtCore import (
@@ -674,6 +676,7 @@ class redLayer(QgsMapTool):
 
             # write annotations into the file in a context manager
             with out_sketch_path.open(mode="w", encoding="UTF8") as f:
+                f.write("srs|"+QgsProject.instance().crs().toProj4()+'\n')
                 for sketch in self.geoSketches:
                     if sketch[2].asGeometry():
                         try:
@@ -725,12 +728,26 @@ class redLayer(QgsMapTool):
             srs = canvas.mapSettings().destinationCrs()
             dumLayer = QgsVectorLayer("Line?crs="+str(srs.authid()), "temporary_lines", "memory")
             self.geoSketches = []
+            self.srs = QgsProject.instance().crs()
+            transformation = None
             for line in infile:
+                if line.startswith("srs|"):
+                    source_srs_def = line.replace("srs|","").replace("\n","")
+                    source_srs = QgsCoordinateReferenceSystem(source_srs_def)
+                    if not source_srs.isValid():
+                        source_srs = QgsCoordinateReferenceSystem.fromProj4(source_srs_def)
+                    transformation = QgsCoordinateTransform(source_srs, QgsProject.instance().crs(), QgsProject.instance())
+                    print (line.replace("srs|","").replace("\n",""),source_srs, QgsProject.instance().crs())
+                    continue
                 inline = line.split("|")
                 sketch = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.LineGeometry)
                 sketch.setWidth(int(inline[1]))
                 sketch.setColor(QColor(inline[0]))
-                sketch.setToGeometry(QgsGeometry.fromWkt(inline[2]), dumLayer)
+                load_geom = QgsGeometry.fromWkt(inline[2])
+                if transformation:
+                    res = load_geom.transform(transformation)
+                    #print (res, load_geom.asWkt())
+                sketch.setToGeometry(load_geom, dumLayer)
                 annotationText = inline[3].replace("%%N%%", "\n") if inline[3] else ""
                 self.geoSketches.append([inline[0], inline[1], sketch, None, annotationText, int(inline[4])])
             self.gestures = int(inline[4])+1
