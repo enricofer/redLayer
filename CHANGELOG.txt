@@ -42,3 +42,6 @@ Fix for QgsAnnotation API break (courtesy of @Fighterisr)
 
 R2.1.0 
 Code and Pep8 cleanup, exceptions logging and external sketch file handling issues fixed ( courtesy of @Guts for Oslandia )
+
+R2.2.0
+Save issue fix and CRS Trasformation support
