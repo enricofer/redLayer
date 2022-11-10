@@ -15,5 +15,4 @@ and is possible to sketch on the screen
 ![](icons/readme_screen.png)
 
 
-
 Tutorial on [Youtube](https://youtu.be/zLt9LB-_8rs)
